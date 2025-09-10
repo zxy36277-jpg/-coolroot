@@ -129,7 +129,8 @@ export class FileService {
     // 使用更灵活的正则表达式匹配，支持多种格式
     const patterns = {
       brandName: [
-        /品牌[：:]\s*([^\n\r]+?)(?=\s*(?:核心卖点|卖点|活动优惠|优惠|行业|目标人群|人群|视频目的|目的|平台|违禁词|$))/i,
+        /(?:品牌名称|品牌)[：:]\s*([^\n\r]+?)(?=\s*(?:核心卖点|卖点|活动优惠|优惠|行业|目标人群|人群|视频目的|目的|平台|违禁词|$))/i,
+        /(?:品牌名称|品牌)[：:]\s*([^\n\r]+)/i,
         /([A-Za-z\u4e00-\u9fa5]+)\s*品牌手册/i,
         /([A-Za-z\u4e00-\u9fa5]+)\s*品\s*牌\s*手\s*册/i,
         /([A-Za-z\u4e00-\u9fa5]+)\s*应运而生/i
@@ -265,8 +266,8 @@ export class FileService {
       
       // 品牌名称 - 改进识别逻辑
       if (!extractedInfo.brandName) {
-        // 匹配 "品牌：" 格式
-        let match = line.match(/品牌[：:]\s*(.+)/i);
+        // 匹配 "品牌名称：" 或 "品牌：" 格式
+        let match = line.match(/(?:品牌名称|品牌)[：:]\s*(.+)/i);
         if (match) {
           extractedInfo.brandName = match[1].trim();
           console.log('提取到品牌名称:', extractedInfo.brandName);
@@ -383,7 +384,7 @@ export class FileService {
     // 如果没有品牌名称，尝试从文本中推断
     if (!extractedInfo.brandName) {
       const brandPatterns = [
-        /品牌[：:]\s*([^\n\r]+)/i,
+        /(?:品牌名称|品牌)[：:]\s*([^\n\r]+)/i,
         /([A-Za-z\u4e00-\u9fa5]+(?:iPhone|华为|小米|OPPO|vivo|三星|苹果))/i,
         /([A-Za-z\u4e00-\u9fa5]+(?:手机|电脑|平板|耳机))/i,
         // 新增：识别品牌手册中的品牌名称

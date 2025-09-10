@@ -1,168 +1,117 @@
-# 部署指南
+# 🚀 部署指南
 
-本指南将帮助您将脚本文案助手部署到不同的平台。
+## 问题说明
+GitHub Pages只能托管静态文件，无法运行后端服务器。需要将后端部署到云服务器上。
 
-## 部署选项
+## 解决方案
 
-### 1. GitHub Pages (推荐用于静态前端)
+### 方案1：Vercel部署（推荐）
 
-GitHub Pages 适合部署前端应用，但需要单独部署后端API。
-
-#### 步骤：
-
-1. **创建GitHub仓库**
-   ```bash
-   # 在GitHub上创建新仓库，然后推送代码
-   git remote add origin https://github.com/yourusername/script-assistant.git
-   git branch -M main
-   git push -u origin main
-   ```
-
-2. **启用GitHub Pages**
-   - 进入仓库设置 → Pages
-   - 选择 "GitHub Actions" 作为源
-   - 工作流会自动部署到 `gh-pages` 分支
-
-3. **配置环境变量**
-   - 在仓库设置中添加 Secrets（至少选择一个）：
-     - `deepseek_api_key`: DeepSeek API密钥（**强烈推荐**，性价比最高）
-     - `openai_api_key`: OpenAI API密钥（效果最佳，价格较高）
-     - `dashscope_api_key`: 通义千问API密钥（推荐新手，有免费额度）
-     - `baidu_api_key`: 文心一言API密钥
-     - `zhipu_api_key`: 智谱AI API密钥
-   
-   **详细获取指南**：
-   - **DeepSeek（强烈推荐）**：查看 `GET_DEEPSEEK_KEY.md`
-   - 通义千问（推荐新手）：查看 `GET_DASHSCOPE_KEY.md`
-   - 其他方案：查看 `API_ALTERNATIVES.md`
-
-### 2. Vercel (推荐用于全栈应用)
-
-Vercel 支持全栈应用部署，包括前端和后端API。
-
-#### 步骤：
-
-1. **安装Vercel CLI**
-   ```bash
-   npm i -g vercel
-   ```
-
-2. **登录Vercel**
-   ```bash
-   vercel login
-   ```
-
-3. **部署**
-   ```bash
-   vercel --prod
-   ```
-
-4. **配置环境变量**
-   - 在Vercel控制台中添加环境变量：
-     - `OPENAI_API_KEY`: 您的OpenAI API密钥
-     - `NODE_ENV`: production
-
-### 3. Netlify
-
-Netlify 也支持全栈应用部署。
-
-#### 步骤：
-
-1. **连接GitHub仓库**
-   - 登录Netlify
-   - 选择 "New site from Git"
-   - 连接您的GitHub仓库
-
-2. **配置构建设置**
-   - Build command: `npm run build && cd client && npm run build`
-   - Publish directory: `client/dist`
-
-3. **配置环境变量**
-   - 在Site settings → Environment variables中添加：
-     - `OPENAI_API_KEY`: 您的OpenAI API密钥
-
-### 4. Railway
-
-Railway 是一个现代的云平台，支持Node.js应用。
-
-#### 步骤：
-
-1. **连接GitHub仓库**
-   - 登录Railway
-   - 选择 "Deploy from GitHub repo"
-   - 选择您的仓库
-
-2. **配置环境变量**
-   - 在项目设置中添加：
-     - `OPENAI_API_KEY`: 您的OpenAI API密钥
-     - `NODE_ENV`: production
-
-## 环境变量配置
-
-无论选择哪种部署方式，都需要配置以下环境变量：
-
-```env
-# OpenAI API配置
-OPENAI_API_KEY=your_openai_api_key_here
-
-# 服务器配置
-PORT=5119
-NODE_ENV=production
-
-# 数据库配置
-DATABASE_URL=./database.sqlite
+#### 步骤1：准备部署文件
+```bash
+# 确保所有文件都已准备好
+npm install
 ```
 
-## 部署前检查清单
+#### 步骤2：部署到Vercel
+1. 访问 [Vercel官网](https://vercel.com)
+2. 使用GitHub账号登录
+3. 点击"New Project"
+4. 选择您的GitHub仓库
+5. 配置项目：
+   - Framework Preset: Other
+   - Build Command: `npm run vercel-build`
+   - Output Directory: `client/dist`
+   - Install Command: `npm install`
 
-- [ ] 确保所有依赖已安装
-- [ ] 前端构建成功 (`npm run build`)
-- [ ] 后端构建成功 (`npm run build:server`)
-- [ ] 配置了必要的环境变量
-- [ ] 测试了本地功能
-- [ ] 更新了API配置以适配部署环境
+#### 步骤3：配置环境变量
+在Vercel项目设置中添加：
+- `NODE_ENV=production`
+
+#### 步骤4：更新前端配置
+部署完成后，Vercel会提供一个URL，例如：`https://your-project.vercel.app`
+
+更新 `client/src/services/api.ts` 中的API地址：
+```typescript
+return 'https://your-project.vercel.app/api';
+```
+
+### 方案2：Railway部署
+
+#### 步骤1：准备部署
+```bash
+npm install
+npm run build:server
+```
+
+#### 步骤2：部署到Railway
+1. 访问 [Railway官网](https://railway.app)
+2. 使用GitHub账号登录
+3. 点击"New Project" -> "Deploy from GitHub repo"
+4. 选择您的仓库
+5. Railway会自动检测并部署
+
+### 方案3：Render部署
+
+#### 步骤1：准备部署
+```bash
+npm install
+npm run build:server
+```
+
+#### 步骤2：部署到Render
+1. 访问 [Render官网](https://render.com)
+2. 使用GitHub账号登录
+3. 点击"New" -> "Web Service"
+4. 连接GitHub仓库
+5. 配置：
+   - Build Command: `npm install && npm run build:client && npm run build:server`
+   - Start Command: `npm start`
+
+## 部署后测试
+
+### 1. 测试API健康检查
+```bash
+curl https://your-deployed-api.com/api/health
+```
+
+### 2. 测试文件上传
+```bash
+curl -X POST -F "file=@test.txt" https://your-deployed-api.com/api/upload
+```
+
+### 3. 测试前端连接
+访问GitHub Pages，测试文件上传功能是否正常。
 
 ## 常见问题
 
-### Q: 部署后API请求失败
-A: 检查API基础URL配置，确保生产环境使用正确的API端点。
+### Q: 部署后API无法访问？
+A: 检查CORS配置，确保允许GitHub Pages域名访问。
 
-### Q: OpenAI API调用失败
-A: 确认环境变量 `OPENAI_API_KEY` 已正确配置。
+### Q: 文件上传失败？
+A: 检查文件大小限制和文件类型支持。
 
-### Q: 静态资源加载失败
-A: 检查构建输出目录和服务器配置。
+### Q: 数据库连接问题？
+A: 云服务器可能需要使用外部数据库服务，如PlanetScale或Supabase。
 
-### Q: 数据库连接问题
-A: 确认数据库文件路径和权限设置。
+## 推荐配置
 
-## 性能优化建议
+### 环境变量
+```env
+NODE_ENV=production
+PORT=3000
+CORS_ORIGIN=https://your-username.github.io
+```
 
-1. **启用Gzip压缩**
-2. **配置CDN加速**
-3. **优化图片资源**
-4. **启用浏览器缓存**
-5. **使用HTTP/2**
+### 数据库
+考虑使用外部数据库服务：
+- PlanetScale (MySQL)
+- Supabase (PostgreSQL)
+- MongoDB Atlas
 
-## 监控和日志
+## 成本估算
+- Vercel: 免费额度充足
+- Railway: 免费额度充足
+- Render: 免费额度充足
 
-建议配置以下监控：
-
-1. **应用性能监控 (APM)**
-2. **错误追踪**
-3. **用户行为分析**
-4. **服务器资源监控**
-
-## 备份策略
-
-1. **代码备份**: 使用Git版本控制
-2. **数据库备份**: 定期备份SQLite文件
-3. **环境配置备份**: 保存环境变量配置
-
-## 安全考虑
-
-1. **API密钥安全**: 不要在代码中硬编码API密钥
-2. **HTTPS**: 确保生产环境使用HTTPS
-3. **CORS配置**: 正确配置跨域请求
-4. **输入验证**: 验证所有用户输入
-5. **速率限制**: 实施API调用频率限制
+所有方案都有免费额度，适合个人项目使用。

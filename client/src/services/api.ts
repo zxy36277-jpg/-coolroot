@@ -5,10 +5,22 @@ import { ScriptContent, ApiResponse, GenerateScriptsRequest, GenerateScriptsResp
 const getApiBaseUrl = () => {
   // 检查是否为开发环境
   if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-    return 'http://localhost:5119/api/scripts';
+    return 'http://localhost:5119/api';
   }
-  // 生产环境使用相对路径，由代理处理
-  return '/api/scripts';
+  
+  // 检查是否为GitHub Pages环境
+  if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
+    // 使用Vercel部署的后端API
+    return 'https://video-script-assistant-api.vercel.app/api';
+  }
+  
+  // 检查是否为Vercel部署环境
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return '/api';
+  }
+  
+  // 默认生产环境
+  return '/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -105,7 +117,7 @@ export const apiService = {
 
     const response = await api.post<ApiResponse<{ content: string; extractedInfo: any }>>('/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        // 不设置 Content-Type，让浏览器自动设置正确的 boundary
       },
     });
 
