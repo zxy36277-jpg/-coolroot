@@ -48,13 +48,13 @@ DeepSeek的定价非常实惠：
 
 ### 方法1：环境变量（推荐）
 在GitHub仓库设置中添加：
-- 变量名：`DEEPSEEK_API_KEY`
+- 变量名：`deepseek_api_key`
 - 变量值：您的API密钥
 
 ### 方法2：本地配置
 在项目根目录创建`.env`文件：
 ```bash
-DEEPSEEK_API_KEY=您的API密钥
+deepseek_api_key=您的API密钥
 ```
 
 ## 🔧 测试API

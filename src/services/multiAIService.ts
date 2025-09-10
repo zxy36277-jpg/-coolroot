@@ -9,25 +9,25 @@ export class MultiAIService {
 
   constructor() {
     // 优先使用DeepSeek，如果没有则使用其他服务
-    if (process.env.DEEPSEEK_API_KEY) {
+    if (process.env.deepseek_api_key) {
       this.apiType = 'deepseek';
-      this.apiKey = process.env.DEEPSEEK_API_KEY;
+      this.apiKey = process.env.deepseek_api_key;
       this.apiUrl = 'https://api.deepseek.com/chat/completions';
-    } else if (process.env.OPENAI_API_KEY) {
+    } else if (process.env.openai_api_key) {
       this.apiType = 'openai';
-      this.apiKey = process.env.OPENAI_API_KEY;
+      this.apiKey = process.env.openai_api_key;
       this.apiUrl = 'https://api.openai.com/v1/chat/completions';
-    } else if (process.env.DASHSCOPE_API_KEY) {
+    } else if (process.env.dashscope_api_key) {
       this.apiType = 'dashscope';
-      this.apiKey = process.env.DASHSCOPE_API_KEY;
+      this.apiKey = process.env.dashscope_api_key;
       this.apiUrl = 'https://dashscope.aliyuncs.com/api/v1/services/aigc/text-generation/generation';
-    } else if (process.env.BAIDU_API_KEY) {
+    } else if (process.env.baidu_api_key) {
       this.apiType = 'baidu';
-      this.apiKey = process.env.BAIDU_API_KEY;
+      this.apiKey = process.env.baidu_api_key;
       this.apiUrl = 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions';
-    } else if (process.env.ZHIPU_API_KEY) {
+    } else if (process.env.zhipu_api_key) {
       this.apiType = 'zhipu';
-      this.apiKey = process.env.ZHIPU_API_KEY;
+      this.apiKey = process.env.zhipu_api_key;
       this.apiUrl = 'https://open.bigmodel.cn/api/paas/v4/chat/completions';
     } else {
       // 默认使用DeepSeek

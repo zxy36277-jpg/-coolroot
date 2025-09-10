@@ -43,19 +43,19 @@ ollama serve
 ### 环境变量配置
 ```bash
 # DeepSeek（强烈推荐，性价比最高）
-DEEPSEEK_API_KEY=sk-your-deepseek-key
+deepseek_api_key=sk-your-deepseek-key
 
 # OpenAI（需要付费）
-OPENAI_API_KEY=sk-your-key-here
+openai_api_key=sk-your-key-here
 
 # 通义千问（免费额度）
-DASHSCOPE_API_KEY=your-dashscope-key
+dashscope_api_key=your-dashscope-key
 
 # 文心一言（免费额度）
-BAIDU_API_KEY=your-baidu-key
+baidu_api_key=your-baidu-key
 
 # 智谱AI（免费额度）
-ZHIPU_API_KEY=your-zhipu-key
+zhipu_api_key=your-zhipu-key
 ```
 
 ### 修改代码支持多API
