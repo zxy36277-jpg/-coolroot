@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .upload-area.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        input[type="file"] {
+            margin: 20px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <h1>文件上传测试</h1>
+    
+    <div class="upload-area" id="uploadArea">
+        <p>拖拽文件到这里或点击选择文件</p>
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.doc">
+    </div>
+    
+    <button onclick="uploadFile()">上传文件</button>
+    
+    <div id="result"></div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const result = document.getElementById('result');
+
+        // 拖拽功能
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+            }
+        });
+
+        // 点击上传区域选择文件
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        async function uploadFile() {
+            const file = fileInput.files[0];
+            if (!file) {
+                showResult('请先选择文件', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                showResult('正在上传...', '');
+                
+                const response = await fetch('/api/scripts/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult('上传成功！\n\n解析结果：\n' + JSON.stringify(data.data, null, 2), 'success');
+                } else {
+                    showResult('上传失败：' + data.message, 'error');
+                }
+            } catch (error) {
+                showResult('上传出错：' + error.message, 'error');
+            }
+        }
+
+        function showResult(message, type) {
+            result.textContent = message;
+            result.className = 'result ' + type;
+        }
+    </script>
+</body>
+</html>
