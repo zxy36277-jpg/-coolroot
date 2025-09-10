@@ -3,7 +3,8 @@ import { ScriptContent, ApiResponse, GenerateScriptsRequest, GenerateScriptsResp
 
 // 根据环境确定API基础URL
 const getApiBaseUrl = () => {
-  if (import.meta.env.DEV) {
+  // 检查是否为开发环境
+  if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
     return 'http://localhost:5119/api/scripts';
   }
   // 生产环境使用相对路径，由代理处理
