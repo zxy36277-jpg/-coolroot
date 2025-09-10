@@ -8,8 +8,12 @@ export class MultiAIService {
   private apiUrl: string;
 
   constructor() {
-    // 优先使用OpenAI，如果没有则使用其他服务
-    if (process.env.OPENAI_API_KEY) {
+    // 优先使用DeepSeek，如果没有则使用其他服务
+    if (process.env.DEEPSEEK_API_KEY) {
+      this.apiType = 'deepseek';
+      this.apiKey = process.env.DEEPSEEK_API_KEY;
+      this.apiUrl = 'https://api.deepseek.com/chat/completions';
+    } else if (process.env.OPENAI_API_KEY) {
       this.apiType = 'openai';
       this.apiKey = process.env.OPENAI_API_KEY;
       this.apiUrl = 'https://api.openai.com/v1/chat/completions';

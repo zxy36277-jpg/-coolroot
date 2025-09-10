@@ -25,12 +25,14 @@ GitHub Pages 适合部署前端应用，但需要单独部署后端API。
 
 3. **配置环境变量**
    - 在仓库设置中添加 Secrets（至少选择一个）：
-     - `OPENAI_API_KEY`: 您的OpenAI API密钥（推荐，效果最佳）
+     - `DEEPSEEK_API_KEY`: DeepSeek API密钥（**强烈推荐**，性价比最高）
+     - `OPENAI_API_KEY`: OpenAI API密钥（效果最佳，价格较高）
      - `DASHSCOPE_API_KEY`: 通义千问API密钥（推荐新手，有免费额度）
      - `BAIDU_API_KEY`: 文心一言API密钥
      - `ZHIPU_API_KEY`: 智谱AI API密钥
    
    **详细获取指南**：
+   - **DeepSeek（强烈推荐）**：查看 `GET_DEEPSEEK_KEY.md`
    - 通义千问（推荐新手）：查看 `GET_DASHSCOPE_KEY.md`
    - 其他方案：查看 `API_ALTERNATIVES.md`
 
