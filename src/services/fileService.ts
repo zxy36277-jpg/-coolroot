@@ -4,6 +4,7 @@ import mammoth from 'mammoth';
 import pdf from 'pdf-parse';
 import fs from 'fs';
 import path from 'path';
+import { aiParser } from './aiParser';
 
 export class FileService {
   // 配置multer用于文件上传
@@ -74,8 +75,8 @@ export class FileService {
     }
   }
 
-  // 从文本内容中提取产品信息 - 全新智能解析引擎
-  static extractProductInfo(text: string): Partial<{
+  // 从文本内容中提取产品信息 - AI增强智能解析引擎
+  static async extractProductInfo(text: string): Promise<Partial<{
     brandName: string;
     sellingPoints: string[];
     promotionInfo: string;
@@ -84,9 +85,36 @@ export class FileService {
     videoPurpose: string;
     platforms: string[];
     forbiddenWords: string;
-  }> {
-    console.log('🚀 启动全新智能解析引擎');
+  }>> {
+    console.log('🤖 启动AI增强智能解析引擎');
     console.log('原始文本长度:', text.length);
+    
+    try {
+      // 首先尝试AI解析
+      console.log('🧠 尝试AI智能解析...');
+      const aiResult = await aiParser.parseProductInfo(text);
+      
+      if (aiResult.confidence > 0.7) {
+        console.log('✅ AI解析成功，置信度:', aiResult.confidence);
+        return {
+          brandName: aiResult.brandName,
+          sellingPoints: aiResult.sellingPoints,
+          promotionInfo: aiResult.discount,
+          industry: aiResult.industry,
+          targetAudience: aiResult.targetAudience,
+          videoPurpose: aiResult.purpose,
+          platforms: aiResult.platforms,
+          forbiddenWords: aiResult.forbiddenWords.join(', ')
+        };
+      } else {
+        console.log('⚠️ AI解析置信度较低，降级到传统解析');
+      }
+    } catch (error) {
+      console.log('❌ AI解析失败，降级到传统解析:', error);
+    }
+    
+    // 降级到传统解析引擎
+    console.log('🔄 启动传统解析引擎作为备选方案');
     
     // 定义关键词映射
     const industryKeywords = {

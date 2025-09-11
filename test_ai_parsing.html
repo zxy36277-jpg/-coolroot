@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI智能解析测试</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            background: #f9f9f9;
+        }
+        
+        .test-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .test-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: monospace;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f0f8ff;
+            border-radius: 10px;
+            border-left: 5px solid #667eea;
+        }
+        
+        .result-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+        
+        .result-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        
+        .result-label {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+        
+        .confidence {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .confidence.high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .confidence.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .confidence.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 AI智能解析测试</h1>
+        
+        <div class="test-section">
+            <h3>测试案例1: 保健品信息</h3>
+            <textarea class="test-input" id="test1">
+品牌名称：汤臣倍健
+核心卖点：维生素D3、钙镁锌、增强免疫力
+活动优惠：买二送一，限时优惠
+行业：保健品
+目标人群：中老年人、孕妇
+视频目的：产品推广
+平台：抖音、快手、小红书
+违禁词：最好、第一、绝对
+            </textarea>
+            <button class="test-button" onclick="testParsing('test1')">测试AI解析</button>
+            <div id="result1"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试案例2: 3C数码产品</h3>
+            <textarea class="test-input" id="test2">
+品牌名称：华为Mate 60 Pro
+核心卖点：麒麟9000S芯片、卫星通话、超感知影像
+活动优惠：以旧换新，最高补贴1000元
+行业：3C数码
+目标人群：商务人士、科技爱好者
+视频目的：广告营销卖货
+平台：抖音、B站、淘宝
+违禁词：最好、第一、绝对
+            </textarea>
+            <button class="test-button" onclick="testParsing('test2')">测试AI解析</button>
+            <div id="result2"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试案例3: 美妆护肤产品</h3>
+            <textarea class="test-input" id="test3">
+品牌名称：兰蔻小黑瓶
+核心卖点：抗衰老精华、深层修护、提亮肤色
+活动优惠：满减优惠，买一送一
+行业：美妆护肤
+目标人群：25-35岁女性
+视频目的：种草带货
+平台：小红书、抖音、淘宝
+违禁词：最好、第一、绝对
+            </textarea>
+            <button class="test-button" onclick="testParsing('test3')">测试AI解析</button>
+            <div id="result3"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试案例4: 自定义测试</h3>
+            <textarea class="test-input" id="test4" placeholder="请输入您要测试的产品信息...">
+            </textarea>
+            <button class="test-button" onclick="testParsing('test4')">测试AI解析</button>
+            <div id="result4"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testParsing(testId) {
+            const textarea = document.getElementById(testId);
+            const resultDiv = document.getElementById(`result${testId.slice(-1)}`);
+            const button = textarea.nextElementSibling;
+            
+            const text = textarea.value.trim();
+            if (!text) {
+                resultDiv.innerHTML = '<div class="error">请输入测试内容</div>';
+                return;
+            }
+            
+            button.disabled = true;
+            button.textContent = 'AI解析中...';
+            resultDiv.innerHTML = '<div class="loading">🤖 AI正在智能解析中，请稍候...</div>';
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: text
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.data.extractedInfo;
+                    const confidence = data.confidence || 0.8;
+                    
+                    let confidenceClass = 'low';
+                    if (confidence > 0.8) confidenceClass = 'high';
+                    else if (confidence > 0.6) confidenceClass = 'medium';
+                    
+                    resultDiv.innerHTML = `
+                        <div class="result-section">
+                            <h4>AI解析结果 
+                                <span class="confidence ${confidenceClass}">
+                                    置信度: ${(confidence * 100).toFixed(1)}%
+                                </span>
+                            </h4>
+                            <div class="result-item">
+                                <span class="result-label">品牌名称:</span> ${info.brandName || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">产品行业:</span> ${info.industry || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">核心卖点:</span> ${(info.sellingPoints || []).join('、') || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">目标人群:</span> ${info.targetAudience || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">营销目的:</span> ${info.videoPurpose || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">推广平台:</span> ${(info.platforms || []).join('、') || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">优惠信息:</span> ${info.promotionInfo || '未识别'}
+                            </div>
+                            <div class="result-item">
+                                <span class="result-label">违禁词:</span> ${info.forbiddenWords || '未识别'}
+                            </div>
+                        </div>
+                        <div class="success">✅ AI解析完成！准确识别产品类型和相关信息。</div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ 解析失败: ${data.error || '未知错误'}</div>`;
+                }
+            } catch (error) {
+                console.error('测试失败:', error);
+                resultDiv.innerHTML = `<div class="error">❌ 网络错误: ${error.message}</div>`;
+            } finally {
+                button.disabled = false;
+                button.textContent = '测试AI解析';
+            }
+        }
+        
+        // 页面加载完成后的提示
+        window.addEventListener('load', function() {
+            console.log('🤖 AI智能解析测试页面已加载');
+            console.log('📝 请选择测试案例或输入自定义内容进行测试');
+        });
+    </script>
+</body>
+</html>
