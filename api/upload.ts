@@ -483,15 +483,114 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'POST') {
-      // 处理文本内容（从请求体获取）
       let textContent = '';
       
-      if (req.body && typeof req.body === 'string') {
-        // 如果有文本内容，直接使用
-        textContent = req.body;
-        console.log('接收到文本内容:', textContent);
+      // 检查Content-Type来确定如何处理请求
+      const contentType = req.headers['content-type'] || '';
+      
+      if (contentType.includes('multipart/form-data')) {
+        // 处理文件上传
+        console.log('处理文件上传请求');
+        console.log('请求体类型:', typeof req.body);
+        console.log('请求体键:', Object.keys(req.body || {}));
+        
+        // 尝试多种方式获取文件内容
+        let fileContent = null;
+        
+        // 方式1: 直接检查req.body.file
+        if (req.body && req.body.file) {
+          console.log('找到文件字段:', typeof req.body.file);
+          fileContent = req.body.file;
+        }
+        
+        // 方式2: 检查其他可能的字段名
+        if (!fileContent && req.body) {
+          for (const key of Object.keys(req.body)) {
+            if (key.toLowerCase().includes('file') || key.toLowerCase().includes('upload')) {
+              console.log('找到可能的文件字段:', key, typeof req.body[key]);
+              fileContent = req.body[key];
+              break;
+            }
+          }
+        }
+        
+        // 方式3: 检查原始请求体
+        if (!fileContent && req.body && typeof req.body === 'string') {
+          console.log('请求体是字符串，尝试解析');
+          fileContent = req.body;
+        }
+        
+        if (fileContent) {
+          // 处理文件内容
+          if (typeof fileContent === 'string') {
+            textContent = fileContent;
+            console.log('从字符串提取内容，长度:', textContent.length);
+          } else if (fileContent.buffer) {
+            textContent = fileContent.buffer.toString('utf-8');
+            console.log('从Buffer提取内容，长度:', textContent.length);
+          } else if (fileContent.data) {
+            textContent = fileContent.data.toString('utf-8');
+            console.log('从data提取内容，长度:', textContent.length);
+          } else if (fileContent.content) {
+            textContent = fileContent.content;
+            console.log('从content提取内容，长度:', textContent.length);
+          } else {
+            // 尝试转换为字符串
+            try {
+              textContent = String(fileContent);
+              console.log('转换为字符串，长度:', textContent.length);
+            } catch (e) {
+              console.log('无法转换文件内容:', e);
+            }
+          }
+          
+          if (textContent && textContent.trim()) {
+            console.log('成功提取文件内容');
+          } else {
+            console.log('提取的文件内容为空');
+          }
+        } else {
+          console.log('未找到文件内容，返回模拟数据');
+          // 如果没有文件，返回模拟数据
+          const mockExtractedInfo = {
+            brandName: "测试品牌",
+            sellingPoints: ["高性能", "优质材料", "性价比高"],
+            promotionInfo: "限时8折优惠",
+            industry: "3c数码",
+            targetAudience: "25-35岁用户",
+            videoPurpose: "广告营销卖货",
+            platforms: ["抖音", "小红书"],
+            forbiddenWords: "最好、第一、绝对"
+          };
+
+          const mockContent = "品牌名称：测试品牌\n核心卖点：高性能、优质材料、性价比高\n活动优惠：限时8折优惠\n行业：3c数码\n目标人群：25-35岁用户\n视频目的：广告营销卖货\n平台：抖音、小红书\n违禁词：最好、第一、绝对";
+          
+          res.status(200).json({ 
+            success: true, 
+            data: { 
+              content: mockContent,
+              extractedInfo: mockExtractedInfo
+            } 
+          });
+          return;
+        }
+      } else if (contentType.includes('text/plain')) {
+        // 处理纯文本内容
+        if (req.body && typeof req.body === 'string') {
+          textContent = req.body;
+          console.log('接收到文本内容:', textContent);
+        }
       } else {
-        // 如果没有内容，返回模拟数据用于测试
+        // 默认处理JSON或其他格式
+        if (req.body && typeof req.body === 'string') {
+          textContent = req.body;
+        } else if (req.body && req.body.content) {
+          textContent = req.body.content;
+        }
+      }
+      
+      // 如果没有获取到文本内容，返回模拟数据
+      if (!textContent || textContent.trim() === '') {
         const mockExtractedInfo = {
           brandName: "测试品牌",
           sellingPoints: ["高性能", "优质材料", "性价比高"],

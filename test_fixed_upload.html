@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复后的文件上传测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+        }
+        .file-info {
+            margin: 10px 0;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+        }
+        .sample-text {
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>修复后的文件上传功能测试</h1>
+    
+    <div class="test-section">
+        <h3>测试1: 华为手机文件上传</h3>
+        <div class="sample-text">华为Mate 60 Pro品牌手册
+
+品牌名称：华为Mate 60 Pro
+核心卖点：麒麟9000S芯片、卫星通话、超感知影像
+活动优惠：首发立减800元，送无线充电器
+行业：3c数码
+目标人群：商务人士和科技爱好者，25-45岁用户
+视频目的：广告营销卖货
+平台：抖音、快手、B站
+违禁词：最好、第一、绝对、完美、顶级</div>
+        <input type="file" id="fileInput1" accept=".txt">
+        <div id="fileInfo1" class="file-info" style="display: none;"></div>
+        <button id="uploadBtn1" onclick="uploadFile(1)" disabled>上传华为手机文件</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试2: 苹果手机文件上传</h3>
+        <div class="sample-text">苹果iPhone 15 Pro品牌手册
+
+品牌名称：苹果iPhone 15 Pro
+核心卖点：A17 Pro芯片、钛金属机身、专业级摄像头
+活动优惠：以旧换新最高抵2000元
+行业：3c数码
+目标人群：高端用户和摄影爱好者，20-40岁用户
+视频目的：种草带货
+平台：抖音、小红书、B站
+违禁词：最好、第一、绝对、完美</div>
+        <input type="file" id="fileInput2" accept=".txt">
+        <div id="fileInfo2" class="file-info" style="display: none;"></div>
+        <button id="uploadBtn2" onclick="uploadFile(2)" disabled>上传苹果手机文件</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试3: 不完整信息文件上传</h3>
+        <div class="sample-text">品牌名称：OPPO Find X6 Pro
+核心卖点：哈苏影像、天玑9200、120Hz屏幕
+行业：3c数码</div>
+        <input type="file" id="fileInput3" accept=".txt">
+        <div id="fileInfo3" class="file-info" style="display: none;"></div>
+        <button id="uploadBtn3" onclick="uploadFile(3)" disabled>上传不完整信息文件</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://coolroot.vercel.app/api';
+
+        // 文件选择处理
+        for (let i = 1; i <= 3; i++) {
+            document.getElementById(`fileInput${i}`).addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    document.getElementById(`fileInfo${i}`).innerHTML = `
+                        <strong>已选择文件:</strong> ${file.name}<br>
+                        <strong>文件大小:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                        <strong>文件类型:</strong> ${file.type || '未知'}
+                    `;
+                    document.getElementById(`fileInfo${i}`).style.display = 'block';
+                    document.getElementById(`uploadBtn${i}`).disabled = false;
+                }
+            });
+        }
+
+        // 文件上传
+        async function uploadFile(testNumber) {
+            const fileInput = document.getElementById(`fileInput${testNumber}`);
+            const resultDiv = document.getElementById(`result${testNumber}`);
+            const uploadBtn = document.getElementById(`uploadBtn${testNumber}`);
+            
+            const file = fileInput.files[0];
+            if (!file) {
+                showResult(testNumber, '请先选择文件', 'error');
+                return;
+            }
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
+            resultDiv.textContent = '正在读取文件并上传...';
+
+            try {
+                // 读取文件内容为文本
+                const fileContent = await readFileAsText(file);
+                console.log('文件内容:', fileContent);
+
+                // 发送到API
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: fileContent
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.textContent = `✅ 文件上传成功！\n\n原始内容:\n${data.data.content}\n\n解析结果:\n${JSON.stringify(data.data.extractedInfo, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 上传失败: ${data.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = `上传测试${testNumber}文件`;
+            }
+        }
+
+        // 读取文件为文本
+        function readFileAsText(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(e);
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+        function showResult(testNumber, message, type) {
+            const resultDiv = document.getElementById(`result${testNumber}`);
+            resultDiv.textContent = message;
+            resultDiv.className = 'result ' + type;
+        }
+    </script>
+</body>
+</html>

@@ -112,12 +112,13 @@ export const apiService = {
 
   // 上传文件
   async uploadFile(file: File): Promise<{ content: string; extractedInfo: any }> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const response = await api.post<ApiResponse<{ content: string; extractedInfo: any }>>('/upload', formData, {
+    // 读取文件内容为文本
+    const fileContent = await this.readFileAsText(file);
+    
+    // 使用文本内容发送请求
+    const response = await api.post<ApiResponse<{ content: string; extractedInfo: any }>>('/upload', fileContent, {
       headers: {
-        // 不设置 Content-Type，让浏览器自动设置正确的 boundary
+        'Content-Type': 'text/plain',
       },
     });
 
@@ -125,6 +126,16 @@ export const apiService = {
       return response.data.data;
     }
     throw new Error(response.data.error || '文件上传失败');
+  }
+
+  // 读取文件为文本
+  private readFileAsText(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file, 'UTF-8');
+    });
   }
 };
 
