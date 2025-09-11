@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI解析功能测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        .success {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 AI解析功能测试</h1>
+        <p>点击按钮测试AI解析功能：</p>
+        
+        <button onclick="testAPI()">测试API连接</button>
+        <button onclick="testHealthSupplement()">测试保健品识别</button>
+        <button onclick="test3CDigital()">测试3C数码识别</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_URL = 'https://coolroot.vercel.app/api/upload';
+        
+        async function testAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<div class="result">🔄 正在测试API连接...</div>';
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: '测试连接'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ API连接成功！<br>
+                            响应状态: ${response.status}<br>
+                            数据: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ API连接失败<br>
+                            状态码: ${response.status}<br>
+                            状态文本: ${response.statusText}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ 网络错误: ${error.message}<br>
+                        可能原因: CORS问题或网络连接问题
+                    </div>
+                `;
+            }
+        }
+        
+        async function testHealthSupplement() {
+            await testParsing('保健品', `品牌名称：汤臣倍健
+核心卖点：维生素D3、钙镁锌、增强免疫力
+活动优惠：买二送一，限时优惠
+行业：保健品
+目标人群：中老年人、孕妇
+视频目的：产品推广
+平台：抖音、快手、小红书
+违禁词：最好、第一、绝对`);
+        }
+        
+        async function test3CDigital() {
+            await testParsing('3C数码', `品牌名称：华为Mate 60 Pro
+核心卖点：麒麟9000S芯片、卫星通话、超感知影像
+活动优惠：以旧换新，最高补贴1000元
+行业：3C数码
+目标人群：商务人士、科技爱好者
+视频目的：广告营销卖货
+平台：抖音、B站、淘宝
+违禁词：最好、第一、绝对`);
+        }
+        
+        async function testParsing(testType, text) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result">🤖 正在测试${testType}识别...</div>`;
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: text
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const info = data.data.extractedInfo;
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ ${testType}识别成功！<br><br>
+                            <strong>识别结果：</strong><br>
+                            品牌名称: ${info.brandName || '未识别'}<br>
+                            产品行业: ${info.industry || '未识别'}<br>
+                            核心卖点: ${(info.sellingPoints || []).join('、') || '未识别'}<br>
+                            目标人群: ${info.targetAudience || '未识别'}<br>
+                            营销目的: ${info.videoPurpose || '未识别'}<br>
+                            推广平台: ${(info.platforms || []).join('、') || '未识别'}<br>
+                            优惠信息: ${info.promotionInfo || '未识别'}<br>
+                            违禁词: ${info.forbiddenWords || '未识别'}<br><br>
+                            <strong>置信度:</strong> ${((data.confidence || 0.8) * 100).toFixed(1)}%
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ ${testType}识别失败: ${data.error || '未知错误'}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ 网络错误: ${error.message}<br>
+                        请检查网络连接或尝试刷新页面
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
