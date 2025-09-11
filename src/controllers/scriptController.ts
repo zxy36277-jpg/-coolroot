@@ -349,7 +349,7 @@ export class ScriptController {
 
       const filePath = req.file.path;
       const fileContent = await FileService.parseFile(filePath);
-      const extractedInfo = FileService.extractProductInfo(fileContent);
+      const extractedInfo = await FileService.extractProductInfo(fileContent);
 
       const response: ApiResponse<{
         content: string;

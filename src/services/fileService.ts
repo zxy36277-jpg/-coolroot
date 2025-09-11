@@ -93,10 +93,11 @@ export class FileService {
       // 首先尝试AI解析
       console.log('🧠 尝试AI智能解析...');
       const aiResult = await aiParser.parseProductInfo(text);
+      console.log('🔍 AI解析原始结果:', aiResult);
       
-      if (aiResult.confidence > 0.7) {
+      if (aiResult && aiResult.confidence > 0.7) {
         console.log('✅ AI解析成功，置信度:', aiResult.confidence);
-        return {
+        const extractedInfo = {
           brandName: aiResult.brandName,
           sellingPoints: aiResult.sellingPoints,
           promotionInfo: aiResult.discount,
@@ -106,8 +107,12 @@ export class FileService {
           platforms: aiResult.platforms,
           forbiddenWords: aiResult.forbiddenWords.join(', ')
         };
+        console.log('🎯 AI解析结果:', extractedInfo);
+        console.log('🚀 直接返回AI解析结果');
+        return extractedInfo;
       } else {
-        console.log('⚠️ AI解析置信度较低，降级到传统解析');
+        console.log('⚠️ AI解析置信度较低或结果无效，降级到传统解析');
+        console.log('AI结果置信度:', aiResult?.confidence);
       }
     } catch (error) {
       console.log('❌ AI解析失败，降级到传统解析:', error);
