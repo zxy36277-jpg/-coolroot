@@ -10,9 +10,9 @@ class VercelAIParser {
     sellingPoints: string[];
     industry: string;
     targetAudience: string;
-    purpose: string;
+    videoPurpose: string;
     platforms: string[];
-    discount: string;
+    promotionInfo: string;
     forbiddenWords: string[];
     confidence: number;
   }> {
@@ -110,9 +110,9 @@ ${text}
         sellingPoints: this.validateArray(result.sellingPoints, '卖点'),
         industry: this.validateString(result.industry, '行业'),
         targetAudience: this.validateString(result.targetAudience, '目标人群'),
-        purpose: this.validateString(result.purpose, '营销目的'),
+        videoPurpose: this.validateString(result.purpose, '营销目的'),
         platforms: this.validateArray(result.platforms, '平台'),
-        discount: this.validateString(result.discount, '优惠信息'),
+        promotionInfo: this.validateString(result.discount, '优惠信息'),
         forbiddenWords: this.validateArray(result.forbiddenWords, '违禁词'),
         confidence: Math.min(Math.max(result.confidence || 0.8, 0), 1)
       };
@@ -166,9 +166,9 @@ ${text}
       sellingPoints: ['优质产品'],
       industry,
       targetAudience: '通用人群',
-      purpose: '产品推广',
+      videoPurpose: '产品推广',
       platforms: ['抖音', '快手'],
-      discount: '无',
+      promotionInfo: '无',
       forbiddenWords: [],
       confidence: 0.3
     };
@@ -827,12 +827,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           extractedInfo = {
             brandName: aiResult.brandName,
             sellingPoints: aiResult.sellingPoints,
-            promotionInfo: aiResult.discount,
+            promotionInfo: aiResult.promotionInfo,
             industry: aiResult.industry,
             targetAudience: aiResult.targetAudience,
-            videoPurpose: aiResult.purpose,
+            videoPurpose: aiResult.videoPurpose,
             platforms: aiResult.platforms,
-            forbiddenWords: aiResult.forbiddenWords.join(', ')
+            forbiddenWords: Array.isArray(aiResult.forbiddenWords) ? aiResult.forbiddenWords.join(', ') : aiResult.forbiddenWords
           };
         } else {
           console.log('⚠️ AI解析置信度较低，降级到传统解析');
@@ -848,7 +848,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         data: { 
           content: textContent,
           extractedInfo: extractedInfo
-        } 
+        },
+        confidence: aiResult?.confidence || 0.8
       });
       return;
     }
