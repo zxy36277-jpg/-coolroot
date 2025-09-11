@@ -8,8 +8,9 @@ const getApiBaseUrl = () => {
     return 'http://localhost:5119/api';
   }
   
-  // 生产环境使用模拟数据
-  return null;
+  // 生产环境使用Vercel API
+  // 请将下面的URL替换为您的实际Vercel部署地址
+  return 'https://video-script-assistant.vercel.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
