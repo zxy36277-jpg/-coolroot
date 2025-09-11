@@ -1,41 +1,46 @@
 {
   "name": "video-script-assistant",
   "version": "1.0.0",
-  "description": "AI-powered video script generation assistant",
+  "description": "智能脚本文案助手 - 支持多平台视频脚本生成",
   "main": "src/server.ts",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:server": "nodemon --exec ts-node src/server.ts",
     "dev:client": "cd client && npm run dev",
-    "build": "npm run build:server && npm run build:client",
+    "build": "npm run build:client && npm run build:server",
     "build:client": "cd client && npm run build",
     "build:server": "tsc",
     "start": "node dist/server.js",
-    "vercel-build": "cd client && npm install && npm run build"
+    "deploy": "vercel --prod",
+    "preview": "vercel"
   },
+  "keywords": [
+    "video-script",
+    "ai-assistant",
+    "content-generation",
+    "marketing",
+    "social-media"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
   "dependencies": {
-    "@types/uuid": "^10.0.0",
-    "axios": "^1.6.0",
-    "cors": "^2.8.5",
-    "crc32": "^0.2.2",
-    "dotenv": "^16.3.1",
+    "@vercel/node": "^3.0.0",
     "express": "^4.18.2",
-    "mammoth": "^1.6.0",
+    "cors": "^2.8.5",
     "multer": "^1.4.5-lts.1",
-    "pdf-parse": "^1.1.1",
     "sqlite3": "^5.1.6",
-    "uuid": "^13.0.0"
+    "dotenv": "^16.3.1",
+    "axios": "^1.6.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
     "@types/multer": "^1.4.11",
     "@types/node": "^20.10.0",
-    "@vercel/node": "^3.2.29",
-    "concurrently": "^8.2.2",
+    "typescript": "^5.3.2",
     "nodemon": "^3.0.2",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.2"
+    "ts-node": "^10.9.1",
+    "concurrently": "^8.2.2"
   },
   "engines": {
     "node": ">=18.0.0"

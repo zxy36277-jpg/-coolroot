@@ -1,40 +1,143 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import express from 'express';
+import cors from 'cors';
+import multer from 'multer';
+import path from 'path';
 
-export default function handler(req: VercelRequest, res: VercelResponse) {
-  // 设置CORS头
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+const app = express();
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
+// 中间件配置
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
-  // 健康检查
-  if (req.method === 'GET' && req.url === '/api/health') {
-    res.status(200).json({ 
-      status: 'ok', 
-      message: 'API is running',
-      timestamp: new Date().toISOString()
-    });
-    return;
-  }
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-  // 其他API路由
-  if (req.method === 'POST' && req.url === '/api/generate-scripts') {
-    // 模拟脚本生成
-    const mockScript = {
-      hook: "同样的预算，你会选择去年的旗舰，还是今年的性能猛兽？三秒告诉你答案！",
-      content: "（0-3s）还在纠结选哪款？今天实测对比告诉你\n（4-10s）左手展示旧款：去年的旗舰机型，性能依旧能打；右手展示新款：但今年的新品，处理器升级30%\n（11-20s）特写镜头：采用全新航空级铝合金材质，手感提升明显",
-      shootingGuide: "1. 采用分屏对比拍摄，左右画面同步展示性能测试\n2. 使用高速摄影机捕捉应用加载速度差异\n3. 材质特写使用微距镜头，突出质感差异",
-      performanceMetrics: "ARPU 1.8万，CTR 6.5%，适配45秒短视频"
+// 内存存储配置
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage,
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['text/plain', 'application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/msword'];
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('不支持的文件格式，请上传txt、pdf、docx或doc文件'), false);
+    }
+  },
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
+});
+
+// 健康检查端点
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: '脚本文案助手API运行正常',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
+// 文件上传和AI解析端点
+app.post('/api/scripts/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: '请选择要上传的文件' });
+    }
+
+    // 模拟AI解析结果
+    const mockResult = {
+      brandName: 'FineNutri斐萃',
+      sellingPoints: ['6000倍抗氧化力的麦角硫因核心成分', '内外双抗抗垂抗纹', '三甲医院真实人体实验验证效果'],
+      promotionInfo: '无明确优惠信息',
+      industry: '保健品',
+      targetAudience: '25-40岁都市女性、职场精英、精致妈妈',
+      videoPurpose: '产品推广',
+      platforms: ['抖音', '小红书', '淘宝'],
+      forbiddenWords: '治愈, 治疗'
     };
-    
-    res.status(200).json({ success: true, script: mockScript });
-    return;
+
+    res.json({
+      success: true,
+      data: {
+        content: req.file.buffer.toString('utf-8'),
+        extractedInfo: mockResult
+      }
+    });
+
+  } catch (error) {
+    console.error('上传处理错误:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: '服务器内部错误，请稍后重试' 
+    });
+  }
+});
+
+// 创建会话端点
+app.post('/api/scripts/sessions', (req, res) => {
+  const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  res.json({
+    success: true,
+    data: { sessionId }
+  });
+});
+
+// 生成脚本端点
+app.post('/api/scripts/generate', (req, res) => {
+  const { sessionId, productInfo } = req.body;
+  
+  if (!sessionId || !productInfo) {
+    return res.status(400).json({ 
+      success: false, 
+      error: '缺少必要参数' 
+    });
   }
 
-  // 404处理
-  res.status(404).json({ error: 'Not found' });
-}
+  // 模拟脚本生成
+  const mockScript = {
+    title: `${productInfo.brandName} - 专业产品推广脚本`,
+    content: `【开场白】
+大家好！今天给大家推荐一款${productInfo.industry}产品 - ${productInfo.brandName}。
+
+【产品介绍】
+${productInfo.sellingPoints.join('，')}。
+
+【目标用户】
+特别适合${productInfo.targetAudience}使用。
+
+【平台适配】
+本脚本适用于${productInfo.platforms.join('、')}等平台。
+
+【注意事项】
+避免使用以下词汇：${productInfo.forbiddenWords}。`,
+    metrics: {
+      estimatedViews: '10K-50K',
+      expectedCTR: '3-8%',
+      targetARPU: '¥50-200'
+    }
+  };
+
+  res.json({
+    success: true,
+    data: mockScript
+  });
+});
+
+// 处理所有其他路由
+app.get('*', (req, res) => {
+  res.json({ 
+    message: '脚本文案助手API',
+    endpoints: [
+      'GET /api/health - 健康检查',
+      'POST /api/scripts/upload - 文件上传',
+      'POST /api/scripts/sessions - 创建会话',
+      'POST /api/scripts/generate - 生成脚本'
+    ]
+  });
+});
+
+export default app;
