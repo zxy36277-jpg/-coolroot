@@ -483,9 +483,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     if (req.method === 'POST') {
-      // 检查是否有文件上传
-      if (!req.body || typeof req.body !== 'string') {
-        // 如果没有文件，返回模拟数据用于测试
+      // 处理文本内容（从请求体获取）
+      let textContent = '';
+      
+      if (req.body && typeof req.body === 'string') {
+        // 如果有文本内容，直接使用
+        textContent = req.body;
+        console.log('接收到文本内容:', textContent);
+      } else {
+        // 如果没有内容，返回模拟数据用于测试
         const mockExtractedInfo = {
           brandName: "测试品牌",
           sellingPoints: ["高性能", "优质材料", "性价比高"],
@@ -508,10 +514,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         return;
       }
-
-      // 处理文本内容（从请求体获取）
-      const textContent = req.body;
-      console.log('接收到文本内容:', textContent);
 
       // 使用文件服务提取产品信息
       const extractedInfo = VercelFileService.extractProductInfo(textContent);
