@@ -132,7 +132,7 @@ ${text}
       throw new Error(`DeepSeek API调用失败: ${response.status} ${response.statusText}`);
     }
 
-    const data: DeepSeekResponse = await response.json();
+    const data = await response.json() as DeepSeekResponse;
     return data.choices[0]?.message?.content || '';
   }
 
