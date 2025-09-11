@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>本地测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .upload-area {
+            border: 2px dashed #007bff;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+        }
+        .upload-area:hover {
+            background-color: #e9ecef;
+        }
+        .file-input {
+            display: none;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 5px;
+            display: none;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 脚本文案助手 - 本地测试</h1>
+        <p>这是一个本地测试页面，用于验证文件上传和解析功能。</p>
+        
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <h3>📁 点击选择文件或拖拽文件到此处</h3>
+            <p>支持 TXT、PDF、DOC、DOCX 格式</p>
+            <input type="file" id="fileInput" class="file-input" accept=".txt,.pdf,.doc,.docx">
+        </div>
+        
+        <div id="result" class="result"></div>
+        
+        <div style="margin-top: 30px;">
+            <h3>🔗 相关链接</h3>
+            <ul>
+                <li><a href="http://localhost:3000" target="_blank">主应用 (http://localhost:3000)</a></li>
+                <li><a href="http://localhost:3000/test_upload_simple.html" target="_blank">简单测试页面</a></li>
+                <li><a href="http://localhost:5119/api/health" target="_blank">API健康检查</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const result = document.getElementById('result');
+        
+        fileInput.addEventListener('change', handleFileUpload);
+        
+        // 拖拽功能
+        const uploadArea = document.querySelector('.upload-area');
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#e9ecef';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#f8f9fa';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.backgroundColor = '#f8f9fa';
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                handleFileUpload();
+            }
+        });
+        
+        async function handleFileUpload() {
+            const file = fileInput.files[0];
+            if (!file) return;
+            
+            showResult('正在上传和解析文件...', 'loading');
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('http://localhost:5119/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showResult(`
+                        <h4>✅ 文件解析成功！</h4>
+                        <p><strong>文件名:</strong> ${file.name}</p>
+                        <p><strong>文件大小:</strong> ${(file.size / 1024).toFixed(2)} KB</p>
+                        <h5>提取的信息:</h5>
+                        <pre>${JSON.stringify(data.data.extractedInfo, null, 2)}</pre>
+                    `, 'success');
+                } else {
+                    showResult(`❌ 解析失败: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                console.error('上传错误:', error);
+                showResult(`❌ 网络错误: ${error.message}`, 'error');
+            }
+        }
+        
+        function showResult(message, type = 'success') {
+            result.innerHTML = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

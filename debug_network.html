@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络诊断工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056CC;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+        }
+        .log {
+            background: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>网络诊断工具</h1>
+        
+        <div class="test-section">
+            <h3>1. 基础连接测试</h3>
+            <button onclick="testBasicConnection()">测试基础连接</button>
+            <div id="basicResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. API健康检查</h3>
+            <button onclick="testHealthCheck()">测试健康检查</button>
+            <div id="healthResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. 文件上传测试</h3>
+            <input type="file" id="testFile" accept=".txt,.pdf,.docx,.doc">
+            <button onclick="testFileUpload()">测试文件上传</button>
+            <div id="uploadResult"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. 网络信息</h3>
+            <button onclick="showNetworkInfo()">显示网络信息</button>
+            <div id="networkInfo"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. 详细日志</h3>
+            <button onclick="clearLog()">清空日志</button>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <script>
+        let logElement = document.getElementById('log');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            logElement.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+        }
+
+        function clearLog() {
+            logElement.innerHTML = '';
+        }
+
+        async function testBasicConnection() {
+            const resultDiv = document.getElementById('basicResult');
+            resultDiv.innerHTML = '<p class="info">测试中...</p>';
+            log('开始基础连接测试');
+            
+            try {
+                const response = await fetch('http://localhost:5119/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `<p class="success">✅ 连接成功！响应时间: ${Date.now() - startTime}ms</p>`;
+                    log(`基础连接测试成功: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ 连接失败: ${response.status} ${response.statusText}</p>`;
+                    log(`基础连接测试失败: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ 网络错误: ${error.message}</p>`;
+                log(`基础连接测试网络错误: ${error.message}`, 'error');
+            }
+        }
+
+        async function testHealthCheck() {
+            const resultDiv = document.getElementById('healthResult');
+            resultDiv.innerHTML = '<p class="info">测试中...</p>';
+            log('开始健康检查测试');
+            
+            const startTime = Date.now();
+            
+            try {
+                const response = await fetch('http://localhost:5119/api/health', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ 健康检查通过！</p>
+                        <p>响应时间: ${responseTime}ms</p>
+                        <p>状态: ${data.status}</p>
+                        <p>版本: ${data.version}</p>
+                    `;
+                    log(`健康检查成功: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    resultDiv.innerHTML = `<p class="error">❌ 健康检查失败: ${response.status}</p>`;
+                    log(`健康检查失败: ${response.status} ${response.statusText}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ 健康检查网络错误: ${error.message}</p>`;
+                log(`健康检查网络错误: ${error.message}`, 'error');
+            }
+        }
+
+        async function testFileUpload() {
+            const fileInput = document.getElementById('testFile');
+            const resultDiv = document.getElementById('uploadResult');
+            
+            if (!fileInput.files[0]) {
+                resultDiv.innerHTML = '<p class="error">请先选择一个文件</p>';
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            resultDiv.innerHTML = '<p class="info">上传中...</p>';
+            log(`开始文件上传测试: ${file.name} (${file.size} bytes)`);
+            
+            const startTime = Date.now();
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                const response = await fetch('http://localhost:5119/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const responseTime = Date.now() - startTime;
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML = `
+                        <p class="success">✅ 文件上传成功！</p>
+                        <p>响应时间: ${responseTime}ms</p>
+                        <p>文件大小: ${file.size} bytes</p>
+                        <p>提取信息: ${data.success ? '成功' : '失败'}</p>
+                    `;
+                    log(`文件上传成功: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.innerHTML = `<p class="error">❌ 文件上传失败: ${response.status}</p>`;
+                    log(`文件上传失败: ${response.status} ${response.statusText} - ${errorText}`, 'error');
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<p class="error">❌ 文件上传网络错误: ${error.message}</p>`;
+                log(`文件上传网络错误: ${error.message}`, 'error');
+            }
+        }
+
+        function showNetworkInfo() {
+            const resultDiv = document.getElementById('networkInfo');
+            
+            const info = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                platform: navigator.platform,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                connection: navigator.connection ? {
+                    effectiveType: navigator.connection.effectiveType,
+                    downlink: navigator.connection.downlink,
+                    rtt: navigator.connection.rtt
+                } : 'Not available',
+                location: window.location.href
+            };
+            
+            resultDiv.innerHTML = `
+                <h4>浏览器信息:</h4>
+                <pre>${JSON.stringify(info, null, 2)}</pre>
+            `;
+            
+            log(`网络信息: ${JSON.stringify(info)}`);
+        }
+
+        // 页面加载时自动运行基础测试
+        window.onload = function() {
+            log('网络诊断工具已加载');
+            testBasicConnection();
+        };
+    </script>
+</body>
+</html>
