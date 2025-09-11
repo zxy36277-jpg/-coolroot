@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>API功能测试</h1>
+    
+    <div class="test-section">
+        <h3>1. 测试会话创建</h3>
+        <button onclick="testCreateSession()">创建新会话</button>
+        <div id="createResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>2. 测试获取会话列表</h3>
+        <button onclick="testGetSessions()">获取会话列表</button>
+        <div id="sessionsResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>3. 测试脚本生成</h3>
+        <button onclick="testGenerateScript()">生成脚本</button>
+        <div id="scriptResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h3>4. 测试文件上传</h3>
+        <button onclick="testUpload()">测试上传</button>
+        <div id="uploadResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://coolroot.vercel.app/api';
+        let currentSessionId = null;
+
+        async function testCreateSession() {
+            const resultDiv = document.getElementById('createResult');
+            resultDiv.textContent = '正在创建会话...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/sessions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentSessionId = data.data.sessionId;
+                    resultDiv.textContent = `✅ 会话创建成功！\n会话ID: ${currentSessionId}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 创建失败: ${data.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testGetSessions() {
+            const resultDiv = document.getElementById('sessionsResult');
+            resultDiv.textContent = '正在获取会话列表...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/sessions`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = `✅ 获取成功！\n会话数量: ${data.data.length}\n${JSON.stringify(data.data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 获取失败: ${data.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testGenerateScript() {
+            const resultDiv = document.getElementById('scriptResult');
+            resultDiv.textContent = '正在生成脚本...';
+            
+            if (!currentSessionId) {
+                resultDiv.textContent = '❌ 请先创建会话';
+                resultDiv.className = 'result error';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/scripts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: currentSessionId,
+                        productInfo: {
+                            name: '测试产品',
+                            description: '这是一个测试产品的描述',
+                            features: ['功能1', '功能2', '功能3'],
+                            targetAudience: '年轻用户',
+                            tone: '轻松幽默'
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = `✅ 脚本生成成功！\n${JSON.stringify(data.data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 生成失败: ${data.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        async function testUpload() {
+            const resultDiv = document.getElementById('uploadResult');
+            resultDiv.textContent = '正在测试文件上传...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.textContent = `✅ 文件上传测试成功！\n${JSON.stringify(data.data, null, 2)}`;
+                    resultDiv.className = 'result success';
+                } else {
+                    resultDiv.textContent = `❌ 上传失败: ${data.error}`;
+                    resultDiv.className = 'result error';
+                }
+            } catch (error) {
+                resultDiv.textContent = `❌ 请求失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html>
