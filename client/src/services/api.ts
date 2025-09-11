@@ -112,52 +112,19 @@ export const apiService = {
 
   // 上传文件
   async uploadFile(file: File): Promise<{ content: string; extractedInfo: any }> {
-    try {
-      // 读取文件内容
-      const textContent = await this.readFileAsText(file);
-      
-      // 发送文本内容到API
-      const response = await api.post<ApiResponse<{ content: string; extractedInfo: any }>>('/upload', textContent, {
-        headers: {
-          'Content-Type': 'text/plain; charset=utf-8',
-        },
-      });
+    const formData = new FormData();
+    formData.append('file', file);
 
-      if (response.data.success && response.data.data) {
-        return response.data.data;
-      }
-      throw new Error(response.data.error || '文件上传失败');
-    } catch (error) {
-      console.error('文件上传错误:', error);
-      throw error;
-    }
-  }
-
-  // 读取文件内容为文本
-  private async readFileAsText(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          resolve(event.target.result as string);
-        } else {
-          reject(new Error('无法读取文件内容'));
-        }
-      };
-      
-      reader.onerror = () => {
-        reject(new Error('文件读取失败'));
-      };
-      
-      // 根据文件类型选择读取方式
-      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
-        reader.readAsText(file, 'utf-8');
-      } else {
-        // 对于其他文件类型，尝试作为文本读取
-        reader.readAsText(file, 'utf-8');
-      }
+    const response = await api.post<ApiResponse<{ content: string; extractedInfo: any }>>('/upload', formData, {
+      headers: {
+        // 不设置 Content-Type，让浏览器自动设置正确的 boundary
+      },
     });
+
+    if (response.data.success && response.data.data) {
+      return response.data.data;
+    }
+    throw new Error(response.data.error || '文件上传失败');
   }
 };
 
