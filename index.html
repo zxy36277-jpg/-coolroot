@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>短视频电商运营脚本助手 - GitHub Pages版本</title>
+    <meta name="description" content="智能生成爆款短视频脚本，助力电商运营">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .warning-banner {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 30px;
+            color: #856404;
+        }
+        
+        .warning-banner h3 {
+            margin-bottom: 10px;
+            color: #d63031;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .upload-section {
+            margin-bottom: 30px;
+        }
+        
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-area:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .upload-area.dragover {
+            border-color: #667eea;
+            background: #f0f2ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            font-size: 0.9rem;
+            color: #999;
+        }
+        
+        #fileInput {
+            display: none;
+        }
+        
+        .file-info {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            display: none;
+        }
+        
+        .product-form {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            height: 80px;
+            resize: vertical;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .result-section {
+            margin-top: 30px;
+            display: none;
+        }
+        
+        .result-content {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 15px;
+        }
+        
+        .api-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+        
+        .api-status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .api-status.offline {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="api-status" id="apiStatus">检查API状态中...</div>
+    
+    <div class="container">
+        <div class="header">
+            <h1>🎬 短视频电商运营脚本助手</h1>
+            <p>智能生成爆款短视频脚本，助力电商运营</p>
+        </div>
+        
+        <div class="warning-banner">
+            <h3>⚠️ GitHub Pages版本说明</h3>
+            <p>此版本运行在GitHub Pages上，文件上传功能通过Vercel后端API提供服务。如果遇到上传问题，请检查网络连接或稍后重试。</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="upload-section">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">点击或拖拽上传产品资料文件</div>
+                    <div class="upload-hint">支持PDF、Word、TXT等格式</div>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt">
+                </div>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+            
+            <div class="product-form" id="productForm">
+                <h3>📝 产品信息确认</h3>
+                <div class="form-group">
+                    <label for="brandName">品牌名称</label>
+                    <input type="text" id="brandName" placeholder="请输入品牌名称">
+                </div>
+                <div class="form-group">
+                    <label for="sellingPoints">核心卖点</label>
+                    <textarea id="sellingPoints" placeholder="请输入核心卖点，用逗号分隔"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="industry">行业类别</label>
+                    <select id="industry">
+                        <option value="3C数码">3C数码</option>
+                        <option value="保健品">保健品</option>
+                        <option value="美妆护肤">美妆护肤</option>
+                        <option value="服装鞋包">服装鞋包</option>
+                        <option value="食品饮料">食品饮料</option>
+                        <option value="家居用品">家居用品</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="targetAudience">目标人群</label>
+                    <input type="text" id="targetAudience" placeholder="请输入目标人群">
+                </div>
+                <div class="form-group">
+                    <label for="purpose">视频目的</label>
+                    <select id="purpose">
+                        <option value="广告营销卖货">广告营销卖货</option>
+                        <option value="品牌宣传">品牌宣传</option>
+                        <option value="产品推广">产品推广</option>
+                        <option value="用户教育">用户教育</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="platforms">发布平台</label>
+                    <input type="text" id="platforms" placeholder="抖音、快手、小红书等">
+                </div>
+                <button class="btn" id="generateBtn">🚀 生成脚本</button>
+            </div>
+            
+            <div class="result-section" id="resultSection">
+                <h3>📋 生成的脚本</h3>
+                <div class="result-content" id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置 - 指向Vercel后端
+        const API_BASE = 'https://coolroot-22hl5i6v1-xys-projects-44f7a938.vercel.app/api';
+        
+        // DOM元素
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const productForm = document.getElementById('productForm');
+        const resultSection = document.getElementById('resultSection');
+        const resultContent = document.getElementById('resultContent');
+        const generateBtn = document.getElementById('generateBtn');
+        const apiStatus = document.getElementById('apiStatus');
+        
+        let currentFile = null;
+        let parsedData = null;
+        
+        // 检查API状态
+        async function checkApiStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/test`, {
+                    method: 'GET',
+                    timeout: 5000
+                });
+                
+                if (response.ok) {
+                    apiStatus.textContent = '✅ API在线';
+                    apiStatus.className = 'api-status online';
+                } else {
+                    throw new Error('API响应异常');
+                }
+            } catch (error) {
+                apiStatus.textContent = '❌ API离线';
+                apiStatus.className = 'api-status offline';
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            checkApiStatus();
+            
+            // 每30秒检查一次API状态
+            setInterval(checkApiStatus, 30000);
+        });
+        
+        // 文件上传处理
+        uploadArea.addEventListener('click', () => fileInput.click());
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        // 处理文件
+        async function handleFile(file) {
+            currentFile = file;
+            
+            // 显示文件信息
+            fileInfo.innerHTML = `
+                <strong>已选择文件：</strong> ${file.name}<br>
+                <strong>文件大小：</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                <strong>文件类型：</strong> ${file.type || '未知'}
+            `;
+            fileInfo.style.display = 'block';
+            
+            // 显示加载状态
+            fileInfo.innerHTML += '<div class="loading"><div class="spinner"></div>正在解析文件内容...</div>';
+            
+            try {
+                // 读取文件内容
+                const content = await readFileContent(file);
+                
+                // 调用API解析
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                        'x-filename': file.name
+                    },
+                    body: content
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    parsedData = result.data;
+                    fillForm(parsedData);
+                    fileInfo.innerHTML = `
+                        <strong>✅ 文件解析成功！</strong><br>
+                        <strong>已选择文件：</strong> ${file.name}<br>
+                        <strong>文件大小：</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                        <strong>文件类型：</strong> ${file.type || '未知'}
+                    `;
+                    productForm.style.display = 'block';
+                } else {
+                    throw new Error(result.error || '解析失败');
+                }
+            } catch (error) {
+                fileInfo.innerHTML = `
+                    <strong>❌ 文件解析失败</strong><br>
+                    <strong>错误信息：</strong> ${error.message}<br>
+                    <strong>已选择文件：</strong> ${file.name}<br>
+                    <strong>文件大小：</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB
+                `;
+                console.error('文件解析错误:', error);
+            }
+        }
+        
+        // 读取文件内容
+        function readFileContent(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.onerror = (e) => reject(new Error('文件读取失败'));
+                
+                if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+                    reader.readAsText(file, 'UTF-8');
+                } else {
+                    // 对于其他文件类型，尝试读取为文本
+                    reader.readAsText(file, 'UTF-8');
+                }
+            });
+        }
+        
+        // 填充表单
+        function fillForm(data) {
+            document.getElementById('brandName').value = data.brandName || '';
+            document.getElementById('sellingPoints').value = Array.isArray(data.sellingPoints) 
+                ? data.sellingPoints.join('，') 
+                : data.sellingPoints || '';
+            document.getElementById('industry').value = data.industry || '其他';
+            document.getElementById('targetAudience').value = data.targetAudience || '';
+            document.getElementById('purpose').value = data.purpose || '广告营销卖货';
+            document.getElementById('platforms').value = Array.isArray(data.platforms) 
+                ? data.platforms.join('，') 
+                : data.platforms || '';
+        }
+        
+        // 生成脚本
+        generateBtn.addEventListener('click', async function() {
+            const productInfo = {
+                brandName: document.getElementById('brandName').value,
+                sellingPoints: document.getElementById('sellingPoints').value.split(/[，,、]/).map(s => s.trim()).filter(s => s),
+                industry: document.getElementById('industry').value,
+                targetAudience: document.getElementById('targetAudience').value,
+                purpose: document.getElementById('purpose').value,
+                platforms: document.getElementById('platforms').value.split(/[，,、]/).map(s => s.trim()).filter(s => s)
+            };
+            
+            // 验证必填字段
+            if (!productInfo.brandName || !productInfo.sellingPoints.length) {
+                alert('请填写品牌名称和核心卖点');
+                return;
+            }
+            
+            generateBtn.disabled = true;
+            generateBtn.textContent = '生成中...';
+            
+            resultSection.style.display = 'block';
+            resultContent.textContent = '正在生成脚本，请稍候...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/scripts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productInfo: productInfo
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultContent.textContent = result.data.script || '脚本生成成功！';
+                } else {
+                    throw new Error(result.error || '脚本生成失败');
+                }
+            } catch (error) {
+                resultContent.textContent = `❌ 生成失败：${error.message}`;
+                console.error('脚本生成错误:', error);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '🚀 生成脚本';
+            }
+        });
+    </script>
+</body>
+</html>

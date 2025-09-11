@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #007bff;
+        }
+        .file-upload.dragover {
+            border-color: #007bff;
+            background-color: #f8f9fa;
+        }
+        .btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .form-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .form-data input, .form-data textarea {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>文件上传调试工具</h1>
+        
+        <div class="form-group">
+            <label>选择文件:</label>
+            <div class="file-upload" id="fileUpload">
+                <p>点击选择文件或拖拽文件到此处</p>
+                <p>支持格式: .txt, .pdf, .docx, .doc</p>
+                <input type="file" id="fileInput" accept=".txt,.pdf,.docx,.doc" style="display: none;">
+            </div>
+            <div id="fileInfo" style="margin-top: 10px; font-size: 12px; color: #666;"></div>
+        </div>
+
+        <button class="btn" id="uploadBtn" disabled>上传文件</button>
+        <button class="btn" id="clearBtn">清空结果</button>
+
+        <div id="result"></div>
+
+        <h2>解析结果表单</h2>
+        <div class="form-data">
+            <div class="form-group">
+                <label>品牌名称:</label>
+                <input type="text" id="brandName" placeholder="品牌名称">
+            </div>
+            
+            <div class="form-group">
+                <label>行业:</label>
+                <input type="text" id="industry" placeholder="行业">
+            </div>
+            
+            <div class="form-group">
+                <label>目标人群:</label>
+                <input type="text" id="targetAudience" placeholder="目标人群">
+            </div>
+            
+            <div class="form-group">
+                <label>视频目的:</label>
+                <input type="text" id="videoPurpose" placeholder="视频目的">
+            </div>
+            
+            <div class="form-group">
+                <label>优惠信息:</label>
+                <textarea id="promotionInfo" placeholder="优惠信息"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>违禁词:</label>
+                <textarea id="forbiddenWords" placeholder="违禁词"></textarea>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>卖点 (每行一个):</label>
+            <textarea id="sellingPoints" placeholder="卖点1&#10;卖点2&#10;卖点3"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>平台 (每行一个):</label>
+            <textarea id="platforms" placeholder="抖音&#10;小红书&#10;微博"></textarea>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileUpload = document.getElementById('fileUpload');
+        const fileInfo = document.getElementById('fileInfo');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const result = document.getElementById('result');
+
+        let selectedFile = null;
+
+        // 文件选择处理
+        fileUpload.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // 拖拽处理
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileSelect({ target: { files: files } });
+            }
+        });
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                fileInfo.innerHTML = `
+                    <strong>已选择文件:</strong> ${file.name}<br>
+                    <strong>文件大小:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+                    <strong>文件类型:</strong> ${file.type || '未知'}
+                `;
+                uploadBtn.disabled = false;
+            }
+        }
+
+        // 上传处理
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = '上传中...';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                console.log('开始上传文件:', selectedFile.name);
+                
+                const response = await fetch('http://localhost:5119/api/scripts/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                console.log('响应状态:', response.status);
+                const data = await response.json();
+                console.log('响应数据:', data);
+
+                if (data.success) {
+                    result.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 上传成功!</h3>
+                            <p><strong>文件内容:</strong></p>
+                            <pre>${data.data.content}</pre>
+                            <p><strong>提取的信息:</strong></p>
+                            <pre>${JSON.stringify(data.data.extractedInfo, null, 2)}</pre>
+                        </div>
+                    `;
+
+                    // 自动填入表单
+                    fillForm(data.data.extractedInfo);
+                } else {
+                    result.innerHTML = `
+                        <div class="error">
+                            <h3>❌ 上传失败</h3>
+                            <p>${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('上传错误:', error);
+                result.innerHTML = `
+                    <div class="error">
+                        <h3>❌ 网络错误</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = '上传文件';
+            }
+        });
+
+        function fillForm(extractedInfo) {
+            console.log('开始填入表单:', extractedInfo);
+            
+            if (extractedInfo.brandName) {
+                document.getElementById('brandName').value = extractedInfo.brandName;
+            }
+            
+            if (extractedInfo.industry) {
+                document.getElementById('industry').value = extractedInfo.industry;
+            }
+            
+            if (extractedInfo.targetAudience) {
+                document.getElementById('targetAudience').value = extractedInfo.targetAudience;
+            }
+            
+            if (extractedInfo.videoPurpose) {
+                document.getElementById('videoPurpose').value = extractedInfo.videoPurpose;
+            }
+            
+            if (extractedInfo.promotionInfo) {
+                document.getElementById('promotionInfo').value = extractedInfo.promotionInfo;
+            }
+            
+            if (extractedInfo.forbiddenWords) {
+                document.getElementById('forbiddenWords').value = extractedInfo.forbiddenWords;
+            }
+            
+            if (extractedInfo.sellingPoints && Array.isArray(extractedInfo.sellingPoints)) {
+                document.getElementById('sellingPoints').value = extractedInfo.sellingPoints.join('\n');
+            }
+            
+            if (extractedInfo.platforms && Array.isArray(extractedInfo.platforms)) {
+                document.getElementById('platforms').value = extractedInfo.platforms.join('\n');
+            }
+
+            console.log('表单填入完成');
+        }
+
+        // 清空结果
+        clearBtn.addEventListener('click', () => {
+            result.innerHTML = '';
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.innerHTML = '';
+            uploadBtn.disabled = true;
+            
+            // 清空表单
+            document.querySelectorAll('input, textarea').forEach(input => {
+                if (input.type !== 'file') {
+                    input.value = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
