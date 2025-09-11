@@ -403,14 +403,15 @@
                 // 读取文件内容
                 const content = await readFileContent(file);
                 
+                // 使用FormData避免HTTP头编码问题
+                const formData = new FormData();
+                formData.append('file', new Blob([content], { type: 'text/plain' }), file.name);
+                formData.append('filename', file.name);
+                
                 // 调用API解析
                 const response = await fetch(`${API_BASE}/upload`, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain',
-                        'x-filename': file.name
-                    },
-                    body: content
+                    body: formData
                 });
                 
                 const result = await response.json();
