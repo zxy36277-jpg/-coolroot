@@ -12,12 +12,8 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 静态文件服务
-app.use(express.static(path.join(__dirname, '../client/dist')));
-
-// API路由
+// API路由（必须在静态文件服务之前）
 app.use('/api/scripts', scriptRoutes);
-app.use('/api', scriptRoutes);
 
 // 健康检查接口
 app.get('/api/health', (req, res) => {
@@ -27,6 +23,9 @@ app.get('/api/health', (req, res) => {
     version: '1.0.0'
   });
 });
+
+// 静态文件服务（在API路由之后）
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 // 前端路由处理（SPA支持）
 app.get('*', (req, res) => {

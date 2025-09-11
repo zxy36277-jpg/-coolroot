@@ -10,8 +10,8 @@ const getApiBaseUrl = () => {
   
   // 检查是否为GitHub Pages环境
   if (typeof window !== 'undefined' && window.location.hostname.includes('github.io')) {
-    // 使用Vercel部署的后端API
-    return 'https://video-script-assistant-api.vercel.app/api';
+    // 临时使用本地服务器（需要确保本地服务器运行）
+    return 'http://192.168.1.24:5119/api';
   }
   
   // 检查是否为Vercel部署环境
