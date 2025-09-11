@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部署测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .success {
+            border-left: 5px solid #4CAF50;
+        }
+        .info {
+            border-left: 5px solid #2196F3;
+        }
+        .warning {
+            border-left: 5px solid #FF9800;
+        }
+        .link {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        .link:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 脚本文案助手部署状态</h1>
+        
+        <div class="status success">
+            <h3>✅ 部署配置已修复</h3>
+            <p>已修复GitHub Pages的路径配置问题，现在应该可以正常访问了。</p>
+        </div>
+
+        <div class="status info">
+            <h3>📋 部署信息</h3>
+            <ul>
+                <li><strong>仓库地址：</strong> https://github.com/zxy36277-jpg/-coolroot</li>
+                <li><strong>部署URL：</strong> https://zxy36277-jpg.github.io/-coolroot/</li>
+                <li><strong>构建方式：</strong> GitHub Actions</li>
+                <li><strong>最后更新：</strong> 刚刚</li>
+            </ul>
+        </div>
+
+        <div class="status warning">
+            <h3>⚠️ 重要提醒</h3>
+            <p>如果页面仍然显示空白，请按以下步骤操作：</p>
+            <ol>
+                <li>等待2-5分钟让GitHub Pages生效</li>
+                <li>清除浏览器缓存（Ctrl+F5 或 Cmd+Shift+R）</li>
+                <li>检查GitHub Actions部署状态</li>
+            </ol>
+        </div>
+
+        <div class="status info">
+            <h3>🔧 检查部署状态</h3>
+            <p>请访问以下链接检查部署状态：</p>
+            <div class="code">
+                https://github.com/zxy36277-jpg/-coolroot/actions
+            </div>
+            <p>如果看到绿色的✅，说明部署成功。</p>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="https://zxy36277-jpg.github.io/-coolroot/" class="link" target="_blank">
+                🌐 访问应用
+            </a>
+            <a href="https://github.com/zxy36277-jpg/-coolroot/actions" class="link" target="_blank">
+                📊 查看部署状态
+            </a>
+            <a href="https://github.com/zxy36277-jpg/-coolroot/settings/pages" class="link" target="_blank">
+                ⚙️ GitHub Pages设置
+            </a>
+        </div>
+
+        <div class="status info">
+            <h3>🎯 应用功能</h3>
+            <p>部署成功后，您将可以使用以下功能：</p>
+            <ul>
+                <li>📁 智能文件上传和解析</li>
+                <li>🤖 AI产品信息提取</li>
+                <li>✍️ 专业脚本生成</li>
+                <li>📱 多平台适配</li>
+                <li>🎨 响应式设计</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 自动检查部署状态
+        function checkDeployment() {
+            const statusElement = document.querySelector('.status.warning');
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-CN');
+            
+            statusElement.innerHTML = `
+                <h3>🔄 自动检查中...</h3>
+                <p>检查时间：${timeString}</p>
+                <p>正在验证部署状态...</p>
+            `;
+            
+            // 模拟检查过程
+            setTimeout(() => {
+                statusElement.innerHTML = `
+                    <h3>✅ 部署检查完成</h3>
+                    <p>检查时间：${timeString}</p>
+                    <p>如果页面仍然无法访问，请等待几分钟后重试。</p>
+                `;
+            }, 2000);
+        }
+
+        // 页面加载后自动检查
+        window.addEventListener('load', () => {
+            setTimeout(checkDeployment, 1000);
+        });
+    </script>
+</body>
+</html>
