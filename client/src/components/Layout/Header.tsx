@@ -1,13 +1,25 @@
 import * as React from 'react';
 import { Sparkles, Menu } from 'lucide-react';
+import { useStore } from '../../store/useStore';
 
 export const Header: React.FC = () => {
+  const { clearScripts, resetForm } = useStore();
+
+  const handleHomeClick = () => {
+    // 清空脚本和表单，回到首页
+    clearScripts();
+    resetForm();
+  };
+
   return (
     <header className="w-full">
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between h-20">
           {/* Apple风格Logo */}
-          <div className="flex items-center space-x-4">
+          <button 
+            onClick={handleHomeClick}
+            className="flex items-center space-x-4 hover:opacity-80 transition-opacity duration-200"
+          >
             <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-700 rounded-2xl flex items-center justify-center shadow-lg">
               <Sparkles className="w-6 h-6 text-white" />
             </div>
@@ -19,13 +31,16 @@ export const Header: React.FC = () => {
                 AI智能生成爆款脚本
               </p>
             </div>
-          </div>
+          </button>
 
           {/* 简洁导航菜单 */}
           <nav className="hidden md:flex items-center space-x-1">
-            <a href="#" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200">
+            <button 
+              onClick={handleHomeClick}
+              className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200"
+            >
               首页
-            </a>
+            </button>
             <a href="#" className="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100/50 rounded-xl transition-all duration-200">
               模板库
             </a>

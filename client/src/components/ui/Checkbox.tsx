@@ -30,9 +30,10 @@ export const Checkbox: React.FC<CheckboxProps> = ({
             checked={checked}
             {...props}
           />
-          <div
+          <label
+            htmlFor={checkboxId}
             className={clsx(
-              'w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200',
+              'w-5 h-5 rounded border-2 flex items-center justify-center transition-all duration-200 cursor-pointer',
               checked
                 ? 'bg-primary-600 border-primary-600'
                 : 'bg-white border-gray-300 hover:border-gray-400',
@@ -43,7 +44,7 @@ export const Checkbox: React.FC<CheckboxProps> = ({
             {checked && (
               <Check className="w-3 h-3 text-white" />
             )}
-          </div>
+          </label>
         </div>
         {label && (
           <label htmlFor={checkboxId} className="text-sm font-medium text-gray-700 cursor-pointer">

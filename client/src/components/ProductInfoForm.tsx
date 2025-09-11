@@ -45,14 +45,23 @@ export const ProductInfoForm: React.FC = () => {
   const { formState, updateProductInfo, setFormLoading, setFormError, setScripts, setCurrentSessionId, showToast } = useStore();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'analyzing' | 'success' | 'error'>('idle');
+  const [extractedInfo, setExtractedInfo] = useState<any>(null);
 
 
   const handleFileSelect = async (file: File) => {
     setFileError(null);
     setSelectedFile(file);
+    setUploadStatus('uploading');
+    setExtractedInfo(null);
     
     try {
       console.log('开始上传文件:', file.name);
+      
+      // 模拟上传延迟
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setUploadStatus('analyzing');
+      
       const result = await apiService.uploadFile(file);
       console.log('文件上传结果:', result);
       
@@ -130,6 +139,8 @@ export const ProductInfoForm: React.FC = () => {
         
         console.log('处理后的信息:', processedInfo);
         updateProductInfo(processedInfo);
+        setExtractedInfo(processedInfo);
+        setUploadStatus('success');
         
         // 显示成功提示
         const extractedFields = Object.keys(processedInfo).filter(key => 
@@ -139,18 +150,20 @@ export const ProductInfoForm: React.FC = () => {
         
         if (extractedFields.length > 0) {
           console.log(`成功提取了 ${extractedFields.length} 个字段的信息`);
-          showToast('success', `文件上传成功！已自动填充 ${extractedFields.length} 个字段的信息`);
+          showToast('success', `文件分析完成！已自动填充 ${extractedFields.length} 个字段的信息`);
         } else {
           showToast('warning', '文件上传成功，但未提取到有效信息，请检查文件格式');
         }
       } else {
         console.log('没有提取到有效信息');
         setFileError('文件格式不正确或未找到有效信息');
+        setUploadStatus('error');
       }
     } catch (error) {
       console.error('文件上传错误:', error);
       const errorMessage = error instanceof Error ? error.message : '文件处理失败';
       setFileError(errorMessage);
+      setUploadStatus('error');
       showToast('error', `文件上传失败：${errorMessage}`);
     }
   };
@@ -158,6 +171,8 @@ export const ProductInfoForm: React.FC = () => {
   const handleFileRemove = () => {
     setSelectedFile(null);
     setFileError(null);
+    setUploadStatus('idle');
+    setExtractedInfo(null);
   };
 
   const handleSellingPointChange = (index: number, value: string) => {
@@ -280,6 +295,8 @@ export const ProductInfoForm: React.FC = () => {
               onFileRemove={handleFileRemove}
               selectedFile={selectedFile}
               error={fileError || undefined}
+              uploadStatus={uploadStatus}
+              extractedInfo={extractedInfo}
             />
             <p className="text-sm text-gray-500 mt-2">
               您也可以直接填写下方表单，或上传包含产品信息的文件
@@ -377,14 +394,21 @@ export const ProductInfoForm: React.FC = () => {
             </label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
               {PLATFORM_OPTIONS.map((platform) => (
-                <Checkbox
-                  key={platform.value}
-                  label={platform.label}
-                  checked={formState.productInfo.platforms.includes(platform.value)}
-                  onChange={(e) => handlePlatformChange(platform.value, e.target.checked)}
-                />
+                <div key={platform.value} className="flex items-center">
+                  <Checkbox
+                    label={platform.label}
+                    checked={formState.productInfo.platforms.includes(platform.value)}
+                    onChange={(e) => handlePlatformChange(platform.value, e.target.checked)}
+                    className="flex-1"
+                  />
+                </div>
               ))}
             </div>
+            {formState.productInfo.platforms.length > 0 && (
+              <p className="text-sm text-gray-500 mt-2">
+                已选择: {formState.productInfo.platforms.join('、')}
+              </p>
+            )}
           </div>
 
           {/* 违禁词 */}

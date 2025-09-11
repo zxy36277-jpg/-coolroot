@@ -1,4 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
+import pdf from 'pdf-parse';
+import mammoth from 'mammoth';
 
 // AI解析器 - 适配Vercel环境
 class VercelAIParser {
@@ -263,6 +265,33 @@ ${text}
 
 // 文件解析服务 - 适配Vercel环境
 class VercelFileService {
+  // 解析文件内容
+  static async parseFile(fileBuffer: Buffer, fileName: string): Promise<string> {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    
+    try {
+      switch (ext) {
+        case 'txt':
+          return fileBuffer.toString('utf-8');
+          
+        case 'pdf':
+          const pdfData = await pdf(fileBuffer);
+          return pdfData.text;
+          
+        case 'docx':
+        case 'doc':
+          const docResult = await mammoth.extractRawText({ buffer: fileBuffer });
+          return docResult.value;
+          
+        default:
+          throw new Error('不支持的文件格式');
+      }
+    } catch (error) {
+      console.error('文件解析失败:', error);
+      throw new Error('文件解析失败，请检查文件格式');
+    }
+  }
+
   // 从文本内容中提取产品信息
   static extractProductInfo(text: string): Partial<{
     brandName: string;
@@ -802,8 +831,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             textContent = fileContent;
             console.log('从字符串提取内容，长度:', textContent.length);
           } else if (fileContent.buffer) {
-            textContent = fileContent.buffer.toString('utf-8');
-            console.log('从Buffer提取内容，长度:', textContent.length);
+            // 处理Buffer类型的文件
+            const fileName = fileContent.originalname || fileContent.name || 'unknown.txt';
+            console.log('处理Buffer文件:', fileName);
+            try {
+              textContent = await VercelFileService.parseFile(fileContent.buffer, fileName);
+              console.log('文件解析成功，内容长度:', textContent.length);
+            } catch (error) {
+              console.error('文件解析失败:', error);
+              textContent = fileContent.buffer.toString('utf-8');
+            }
           } else if (fileContent.data) {
             textContent = fileContent.data.toString('utf-8');
             console.log('从data提取内容，长度:', textContent.length);

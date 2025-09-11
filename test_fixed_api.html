@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API修复验证测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .result.success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .result.error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .result.loading {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 API修复验证测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 健康检查测试</h3>
+            <button onclick="testHealth()">测试 /api/health</button>
+            <div id="healthResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 创建会话测试</h3>
+            <button onclick="testCreateSession()">测试 /api/scripts/sessions</button>
+            <div id="sessionResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 文件上传测试</h3>
+            <button onclick="testFileUpload()">测试 /api/scripts/upload</button>
+            <div id="uploadResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 脚本生成测试</h3>
+            <button onclick="testGenerateScripts()">测试 /api/scripts/generate</button>
+            <div id="generateResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. 完整流程测试</h3>
+            <button onclick="testFullWorkflow()">测试完整工作流程</button>
+            <div id="workflowResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5119/api';
+        
+        async function testHealth() {
+            const result = document.getElementById('healthResult');
+            result.className = 'result loading';
+            result.textContent = '正在测试健康检查...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    result.className = 'result success';
+                    result.textContent = `✅ 健康检查成功\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 健康检查失败: ${error.message}`;
+            }
+        }
+        
+        async function testCreateSession() {
+            const result = document.getElementById('sessionResult');
+            result.className = 'result loading';
+            result.textContent = '正在创建会话...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/scripts/sessions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    result.className = 'result success';
+                    result.textContent = `✅ 会话创建成功\n会话ID: ${data.data.sessionId}\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 会话创建失败: ${error.message}`;
+            }
+        }
+        
+        async function testFileUpload() {
+            const result = document.getElementById('uploadResult');
+            result.className = 'result loading';
+            result.textContent = '正在测试文件上传...';
+            
+            try {
+                const testContent = `斐萃FineNutri品牌手册
+
+品牌介绍：
+斐萃FineNutri是一家专注于高端营养保健品的品牌，致力于为消费者提供科学、安全、有效的营养补充解决方案。
+
+产品信息：
+- 品牌名称：斐萃FineNutri
+- 产品类型：保健品
+- 核心卖点：
+  1. 科学配方：采用国际先进配方，经过严格科学验证
+  2. 天然原料：精选全球优质天然原料，无添加防腐剂
+  3. 专业认证：获得多项国际权威认证，品质有保障
+
+目标人群：
+- 关注健康的成年人
+- 需要营养补充的中老年人
+- 追求高品质生活的消费者
+
+营销目的：
+品牌宣传和产品推广，提升品牌知名度和市场占有率。
+
+平台推广：
+抖音、快手、小红书、B站等短视频平台。`;
+
+                const response = await fetch(`${API_BASE}/scripts/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: testContent
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    result.className = 'result success';
+                    result.textContent = `✅ 文件上传成功\n\n提取的品牌信息:\n${JSON.stringify(data.data.extractedInfo, null, 2)}\n\n内容预览:\n${data.data.content.substring(0, 200)}...`;
+                } else {
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 文件上传失败: ${error.message}`;
+            }
+        }
+        
+        async function testGenerateScripts() {
+            const result = document.getElementById('generateResult');
+            result.className = 'result loading';
+            result.textContent = '正在测试脚本生成...';
+            
+            try {
+                const requestData = {
+                    sessionId: 'test-session-' + Date.now(),
+                    productInfo: {
+                        brandName: '斐萃FineNutri',
+                        industry: '保健品',
+                        sellingPoints: ['科学配方', '天然原料', '专业认证'],
+                        targetAudience: '关注健康的成年人',
+                        videoPurpose: '品牌宣传和产品推广',
+                        platforms: ['抖音', '快手', '小红书'],
+                        forbiddenWords: '治疗, 治愈, 预防疾病'
+                    }
+                };
+                
+                const response = await fetch(`${API_BASE}/scripts/generate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    result.className = 'result success';
+                    result.textContent = `✅ 脚本生成成功\n生成了 ${data.data.scripts.length} 个脚本\n\n第一个脚本标题: ${data.data.scripts[0].title}\n\n完整响应:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    throw new Error(data.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent = `❌ 脚本生成失败: ${error.message}`;
+            }
+        }
+        
+        async function testFullWorkflow() {
+            const result = document.getElementById('workflowResult');
+            result.className = 'result loading';
+            result.textContent = '正在测试完整工作流程...\n';
+            
+            try {
+                // 步骤1: 创建会话
+                result.textContent += '步骤1: 创建会话...\n';
+                const sessionResponse = await fetch(`${API_BASE}/scripts/sessions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const sessionData = await sessionResponse.json();
+                
+                if (!sessionResponse.ok || !sessionData.success) {
+                    throw new Error('创建会话失败');
+                }
+                
+                const sessionId = sessionData.data.sessionId;
+                result.textContent += `✅ 会话创建成功: ${sessionId}\n`;
+                
+                // 步骤2: 上传文件
+                result.textContent += '步骤2: 上传文件...\n';
+                const uploadResponse = await fetch(`${API_BASE}/scripts/upload`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: '斐萃FineNutri品牌手册\n品牌名称：斐萃FineNutri\n产品类型：保健品\n核心卖点：科学配方、天然原料、专业认证'
+                });
+                const uploadData = await uploadResponse.json();
+                
+                if (!uploadResponse.ok || !uploadData.success) {
+                    throw new Error('文件上传失败');
+                }
+                
+                result.textContent += `✅ 文件上传成功，识别品牌: ${uploadData.data.extractedInfo.brandName}\n`;
+                
+                // 步骤3: 生成脚本
+                result.textContent += '步骤3: 生成脚本...\n';
+                const generateResponse = await fetch(`${API_BASE}/scripts/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: sessionId,
+                        productInfo: uploadData.data.extractedInfo
+                    })
+                });
+                const generateData = await generateResponse.json();
+                
+                if (!generateResponse.ok || !generateData.success) {
+                    throw new Error('脚本生成失败');
+                }
+                
+                result.textContent += `✅ 脚本生成成功，生成了 ${generateData.data.scripts.length} 个脚本\n`;
+                result.textContent += `\n完整工作流程测试成功！\n`;
+                result.textContent += `生成的脚本类型: ${generateData.data.scripts.map(s => s.templateType).join(', ')}\n`;
+                
+                result.className = 'result success';
+                
+            } catch (error) {
+                result.className = 'result error';
+                result.textContent += `❌ 工作流程测试失败: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
