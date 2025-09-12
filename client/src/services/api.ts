@@ -75,7 +75,7 @@ const generateMockData = () => {
     forbiddenWords: "最好、第一、绝对"
   };
 
-  return { mockScript, mockExtractedInfo };
+  return { mockScript: baseScript, mockExtractedInfo };
 };
 
 export const apiService = {
