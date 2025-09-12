@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Pages测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .status {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .success {
+            border-left: 5px solid #4CAF50;
+        }
+        .error {
+            border-left: 5px solid #f44336;
+        }
+        .info {
+            border-left: 5px solid #2196F3;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #45a049;
+            transform: translateY(-2px);
+        }
+        .links {
+            margin-top: 30px;
+        }
+        .links a {
+            color: #FFD700;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎉 GitHub Pages测试页面</h1>
+        
+        <div class="status success">
+            <h2>✅ 页面加载成功</h2>
+            <p>如果您能看到这个页面，说明GitHub Pages部署正常工作。</p>
+        </div>
+        
+        <div class="status info">
+            <h2>📋 测试信息</h2>
+            <p><strong>当前时间:</strong> <span id="currentTime"></span></p>
+            <p><strong>页面URL:</strong> <span id="currentUrl"></span></p>
+            <p><strong>用户代理:</strong> <span id="userAgent"></span></p>
+        </div>
+        
+        <div class="status">
+            <h2>🧪 功能测试</h2>
+            <button onclick="testJavaScript()">测试JavaScript</button>
+            <button onclick="testCSS()">测试CSS动画</button>
+            <button onclick="testLocalStorage()">测试本地存储</button>
+            <div id="testResults"></div>
+        </div>
+        
+        <div class="links">
+            <h2>🔗 相关链接</h2>
+            <p><a href="/-coolroot/">主应用页面</a></p>
+            <p><a href="/-coolroot/test_github_pages_fix.html">修复测试页面</a></p>
+            <p><a href="https://github.com/zxy36277-jpg/-coolroot">GitHub仓库</a></p>
+        </div>
+    </div>
+
+    <script>
+        // 显示当前信息
+        document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN');
+        document.getElementById('currentUrl').textContent = window.location.href;
+        document.getElementById('userAgent').textContent = navigator.userAgent.substring(0, 50) + '...';
+
+        function testJavaScript() {
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<p style="color: #4CAF50;">✅ JavaScript功能正常</p>';
+        }
+
+        function testCSS() {
+            const container = document.querySelector('.container');
+            container.style.transform = 'scale(1.05)';
+            setTimeout(() => {
+                container.style.transform = 'scale(1)';
+            }, 300);
+        }
+
+        function testLocalStorage() {
+            try {
+                localStorage.setItem('test', 'GitHub Pages工作正常');
+                const value = localStorage.getItem('test');
+                const results = document.getElementById('testResults');
+                results.innerHTML = '<p style="color: #4CAF50;">✅ 本地存储功能正常: ' + value + '</p>';
+            } catch (e) {
+                const results = document.getElementById('testResults');
+                results.innerHTML = '<p style="color: #f44336;">❌ 本地存储功能异常</p>';
+            }
+        }
+
+        // 自动测试
+        setTimeout(() => {
+            testJavaScript();
+        }, 1000);
+    </script>
+</body>
+</html>
