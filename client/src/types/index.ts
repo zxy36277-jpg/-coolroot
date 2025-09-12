@@ -8,6 +8,12 @@ export interface ProductInfo {
   videoPurpose: string;
   platforms: string[];
   forbiddenWords: string;
+  productFeatures?: string[];
+  priceRange?: string;
+  competitiveAdvantages?: string[];
+  emotionalAppeals?: string[];
+  callToAction?: string;
+  confidence?: number;
 }
 
 // 脚本内容接口
@@ -16,11 +22,13 @@ export interface ScriptContent {
   sessionId: string;
   templateType: string;
   title: string;
-  coverSuggestion: string;
+  coverSuggestion?: string;
   hook: string;
   content: string;
   shootingGuide: string;
   performanceMetrics: string;
+  hashtags?: string[];
+  callToAction?: string;
   createdAt?: string;
 }
 
@@ -34,7 +42,8 @@ export interface ApiResponse<T = any> {
 
 // 脚本生成请求接口
 export interface GenerateScriptsRequest {
-  productInfo: ProductInfo;
+  productInfo?: ProductInfo;
+  extractedInfo?: any;
   sessionId?: string;
 }
 

@@ -23,7 +23,9 @@ export const ScriptCard: React.FC<ScriptCardProps> = ({ script, onUpdate }) => {
     hook: script.hook,
     content: script.content,
     shootingGuide: script.shootingGuide,
-    performanceMetrics: script.performanceMetrics
+    performanceMetrics: script.performanceMetrics,
+    hashtags: script.hashtags,
+    callToAction: script.callToAction
   });
 
   const { setScriptError } = useStore();
@@ -45,7 +47,9 @@ export const ScriptCard: React.FC<ScriptCardProps> = ({ script, onUpdate }) => {
       hook: script.hook,
       content: script.content,
       shootingGuide: script.shootingGuide,
-      performanceMetrics: script.performanceMetrics
+      performanceMetrics: script.performanceMetrics,
+      hashtags: script.hashtags,
+      callToAction: script.callToAction
     });
     setIsEditing(false);
   };
@@ -239,6 +243,52 @@ export const ScriptCard: React.FC<ScriptCardProps> = ({ script, onUpdate }) => {
             </div>
           )}
         </div>
+
+        {/* 话题标签 */}
+        {script.hashtags && script.hashtags.length > 0 && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">话题标签</h4>
+            {isEditing ? (
+              <Textarea
+                value={editedContent.hashtags?.join(' ') || ''}
+                onChange={(e) => setEditedContent(prev => ({ ...prev, hashtags: e.target.value.split(' ').filter(tag => tag.trim()) }))}
+                rows={2}
+                className="border-0 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500"
+                placeholder="输入话题标签，用空格分隔"
+              />
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {script.hashtags.map((tag, index) => (
+                  <span
+                    key={index}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* 行动号召 */}
+        {script.callToAction && (
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold text-gray-800 uppercase tracking-wide">行动号召</h4>
+            {isEditing ? (
+              <Textarea
+                value={editedContent.callToAction || ''}
+                onChange={(e) => setEditedContent(prev => ({ ...prev, callToAction: e.target.value }))}
+                rows={2}
+                className="border-0 bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-primary-500"
+              />
+            ) : (
+              <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-xl border border-green-200">
+                <p className="text-sm text-green-700 font-medium leading-relaxed">{script.callToAction}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Apple风格编辑模式操作按钮 */}

@@ -147,17 +147,44 @@ export const FileUpload: React.FC<FileUploadProps> = ({
           
           {/* 成功状态显示提取的信息 */}
           {uploadStatus === 'success' && extractedInfo && (
-            <div className="mt-4 p-3 bg-white rounded-lg border border-green-200">
-              <p className="text-xs text-gray-600 mb-2">识别到的信息:</p>
-              <div className="space-y-1 text-xs text-gray-700">
+            <div className="mt-4 p-4 bg-white rounded-lg border border-green-200">
+              <p className="text-xs text-gray-600 mb-3 font-medium">AI智能识别结果:</p>
+              <div className="grid grid-cols-1 gap-2 text-xs text-gray-700">
                 {extractedInfo.brandName && (
-                  <div>品牌: <span className="font-medium text-green-700">{extractedInfo.brandName}</span></div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">品牌:</span>
+                    <span className="font-medium text-green-700">{extractedInfo.brandName}</span>
+                  </div>
                 )}
                 {extractedInfo.industry && (
-                  <div>行业: <span className="font-medium text-green-700">{extractedInfo.industry}</span></div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">行业:</span>
+                    <span className="font-medium text-green-700">{extractedInfo.industry}</span>
+                  </div>
                 )}
                 {extractedInfo.sellingPoints && extractedInfo.sellingPoints.length > 0 && (
-                  <div>卖点: <span className="font-medium text-green-700">{extractedInfo.sellingPoints.join('、')}</span></div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">卖点:</span>
+                    <span className="font-medium text-green-700">{extractedInfo.sellingPoints.join('、')}</span>
+                  </div>
+                )}
+                {extractedInfo.targetAudience && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">目标人群:</span>
+                    <span className="font-medium text-green-700">{extractedInfo.targetAudience}</span>
+                  </div>
+                )}
+                {extractedInfo.priceRange && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">价格区间:</span>
+                    <span className="font-medium text-green-700">{extractedInfo.priceRange}</span>
+                  </div>
+                )}
+                {extractedInfo.confidence && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">识别置信度:</span>
+                    <span className="font-medium text-green-700">{(extractedInfo.confidence * 100).toFixed(0)}%</span>
+                  </div>
                 )}
               </div>
             </div>

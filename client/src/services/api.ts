@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ScriptContent, ApiResponse, GenerateScriptsRequest, GenerateScriptsResponse } from '../types';
+import { deepseekService, FileAnalysisRequest, ScriptGenerationRequest } from './deepseek';
 
 // 根据环境确定API基础URL
 const getApiBaseUrl = () => {
@@ -96,12 +97,68 @@ export const apiService = {
   // 生成脚本
   async generateScripts(request: GenerateScriptsRequest): Promise<GenerateScriptsResponse> {
     if (!API_BASE_URL) {
-      // 生产环境返回模拟数据
-      const { mockScript } = generateMockData();
+      // 生产环境使用DeepSeek API生成脚本
       const sessionId = request.sessionId || 'mock-session-' + Date.now();
       
-      // 生成6个不同模板的脚本
-      const scripts: ScriptContent[] = [
+      try {
+        // 使用DeepSeek API生成脚本
+        const scripts: ScriptContent[] = [];
+        const templateTypes = ['对比类', '测评类', '种草类', '剧情类', '知识类', '情感类'];
+        
+        for (let i = 0; i < templateTypes.length; i++) {
+          const templateType = templateTypes[i];
+          
+          const scriptRequest: ScriptGenerationRequest = {
+            extractedInfo: request.extractedInfo || {
+              brandName: '示例品牌',
+              sellingPoints: ['高性能', '优质材料', '性价比高'],
+              promotionInfo: '限时8折优惠',
+              industry: '3c数码',
+              targetAudience: '25-35岁用户',
+              videoPurpose: '广告营销卖货',
+              platforms: ['抖音', '小红书'],
+              forbiddenWords: '最好、第一、绝对',
+              productFeatures: ['功能强大', '设计精美'],
+              priceRange: '100-500元',
+              competitiveAdvantages: ['性价比高'],
+              emotionalAppeals: ['提升生活品质'],
+              callToAction: '立即购买，享受优惠',
+              confidence: 0.7
+            },
+            templateType,
+            videoLength: 30,
+            platform: '抖音',
+            targetAudience: request.extractedInfo?.targetAudience || '25-35岁用户'
+          };
+          
+          const scriptResult = await deepseekService.generateScript(scriptRequest);
+          
+          scripts.push({
+            id: i + 1,
+            sessionId,
+            templateType,
+            title: scriptResult.title,
+            hook: scriptResult.hook,
+            content: scriptResult.content,
+            shootingGuide: scriptResult.shootingGuide,
+            performanceMetrics: scriptResult.performanceMetrics,
+            hashtags: scriptResult.hashtags,
+            callToAction: scriptResult.callToAction,
+            createdAt: new Date().toISOString()
+          });
+        }
+        
+        return {
+          sessionId,
+          scripts
+        };
+      } catch (error) {
+        console.error('DeepSeek API脚本生成失败，使用备用方法:', error);
+        // 如果DeepSeek API失败，使用原有的模拟数据
+        const { mockScript } = generateMockData();
+        
+        // 生成6个不同模板的脚本
+        const scripts: ScriptContent[] = [
         {
           ...mockScript,
           id: 1,
@@ -164,10 +221,11 @@ export const apiService = {
         }
       ];
       
-      return {
-        sessionId,
-        scripts
-      };
+        return {
+          sessionId,
+          scripts
+        };
+      }
     }
     
     const response = await api.post<ApiResponse<GenerateScriptsResponse>>('/scripts/generate', request);
@@ -238,19 +296,33 @@ export const apiService = {
   // 上传文件
   async uploadFile(file: File): Promise<{ content: string; extractedInfo: any }> {
     if (!API_BASE_URL) {
-      // 生产环境使用模拟数据
+      // 生产环境使用DeepSeek API进行智能分析
       const content = await this.readFileAsText(file);
       
-      // 模拟AI解析过程
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // 基于文件内容智能提取信息
-      const extractedInfo = this.simulateAIExtraction(content, file.name);
-      
-      return {
-        content,
-        extractedInfo
-      };
+      try {
+        // 使用DeepSeek API分析文件内容
+        const analysisRequest: FileAnalysisRequest = {
+          content,
+          fileName: file.name,
+          fileType: file.type || this.getFileTypeFromName(file.name)
+        };
+        
+        const extractedInfo = await deepseekService.analyzeFileContent(analysisRequest);
+        
+        return {
+          content,
+          extractedInfo
+        };
+      } catch (error) {
+        console.error('DeepSeek API分析失败，使用备用方法:', error);
+        // 如果DeepSeek API失败，使用原有的模拟方法
+        const extractedInfo = this.simulateAIExtraction(content, file.name);
+        
+        return {
+          content,
+          extractedInfo
+        };
+      }
     }
     
     // 检查文件类型
@@ -296,6 +368,18 @@ export const apiService = {
       reader.onerror = (e) => reject(e);
       reader.readAsText(file, 'UTF-8');
     });
+  },
+
+  // 根据文件名获取文件类型
+  getFileTypeFromName(fileName: string): string {
+    const ext = fileName.split('.').pop()?.toLowerCase();
+    const typeMap: { [key: string]: string } = {
+      'txt': 'text/plain',
+      'pdf': 'application/pdf',
+      'doc': 'application/msword',
+      'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    };
+    return typeMap[ext || ''] || 'text/plain';
   },
 
   // 模拟AI智能提取信息
