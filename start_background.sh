@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# 🚀 脚本文案助手一键启动脚本
+# 🚀 脚本文案助手后台启动脚本
 # 作者: AI Assistant
 # 日期: $(date)
 
-echo "🎬 脚本文案助手启动中..."
+echo "🎬 脚本文案助手后台启动中..."
 echo "=================================="
 
 # 检查Node.js是否安装
@@ -57,17 +57,33 @@ fi
 
 echo "✅ 依赖安装完成"
 
+# 创建日志目录
+mkdir -p logs
+
 # 启动服务器
 echo ""
-echo "🚀 启动服务器..."
+echo "🚀 启动后台服务器..."
 echo "=================================="
 echo "📱 前端界面: http://localhost:3000"
 echo "🔧 后端API: http://localhost:5119"
 echo "🌐 GitHub Pages: https://zxy36277-jpg.github.io/-coolroot/"
 echo "=================================="
 echo ""
-echo "💡 提示: 按 Ctrl+C 停止服务器"
+echo "📝 日志文件: logs/server.log"
+echo "🛑 停止服务器: ./stop.sh"
 echo ""
 
-# 启动开发服务器
-npm run dev
+# 启动开发服务器并记录日志
+nohup npm run dev > logs/server.log 2>&1 &
+SERVER_PID=$!
+
+# 保存PID到文件
+echo $SERVER_PID > logs/server.pid
+
+echo "✅ 服务器已启动，PID: $SERVER_PID"
+echo "✅ 服务器正在后台运行..."
+echo ""
+echo "💡 使用以下命令管理服务器:"
+echo "   查看状态: ./status.sh"
+echo "   查看日志: tail -f logs/server.log"
+echo "   停止服务器: ./stop.sh"

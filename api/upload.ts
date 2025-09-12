@@ -21,17 +21,84 @@ class VercelAIParser {
     try {
       console.log('🤖 开始AI智能解析...');
       
-      const prompt = this.buildPrompt(text);
+      // 预处理文本，提取关键信息
+      const preprocessedText = this.preprocessText(text);
+      
+      const prompt = this.buildPrompt(preprocessedText);
       const response = await this.callDeepSeekAPI(prompt);
       const result = this.parseAIResponse(response);
       
-      console.log('✅ AI解析完成:', result);
-      return result;
+      // 后处理结果，提高准确性
+      const enhancedResult = this.enhanceResult(result, text);
+      
+      console.log('✅ AI解析完成:', enhancedResult);
+      return enhancedResult;
     } catch (error) {
       console.error('❌ AI解析失败:', error);
       // 降级到传统解析
       return this.fallbackParsing(text);
     }
+  }
+
+  private preprocessText(text: string): string {
+    // 提取品牌名称
+    const brandMatch = text.match(/(?:品牌名称[：:]\s*|品牌[：:]\s*|品牌手册[：:]\s*)([^\n\r，,。.]+)/i);
+    const brandName = brandMatch ? brandMatch[1].trim() : '';
+    
+    // 提取目标人群
+    const audienceMatch = text.match(/(?:目标人群[：:]\s*|适用人群[：:]\s*|人群[：:]\s*)([^\n\r，,。.]+)/i);
+    const targetAudience = audienceMatch ? audienceMatch[1].trim() : '';
+    
+    // 提取营销目的
+    const purposeMatch = text.match(/(?:营销目的[：:]\s*|视频目的[：:]\s*|推广目的[：:]\s*)([^\n\r，,。.]+)/i);
+    const purpose = purposeMatch ? purposeMatch[1].trim() : '';
+    
+    // 构建增强的文本
+    let enhancedText = text;
+    if (brandName) {
+      enhancedText = `品牌名称：${brandName}\n${enhancedText}`;
+    }
+    if (targetAudience) {
+      enhancedText = `目标人群：${targetAudience}\n${enhancedText}`;
+    }
+    if (purpose) {
+      enhancedText = `营销目的：${purpose}\n${enhancedText}`;
+    }
+    
+    return enhancedText;
+  }
+
+  private enhanceResult(result: any, originalText: string): any {
+    // 验证品牌名称
+    if (result.brandName === '未知品牌' || !result.brandName) {
+      const brandMatch = originalText.match(/(?:品牌名称[：:]\s*|品牌[：:]\s*|品牌手册[：:]\s*)([^\n\r，,。.]+)/i);
+      if (brandMatch) {
+        result.brandName = brandMatch[1].trim();
+      }
+    }
+    
+    // 验证目标人群
+    if (result.targetAudience === '通用人群' || !result.targetAudience) {
+      const audienceMatch = originalText.match(/(?:目标人群[：:]\s*|适用人群[：:]\s*|人群[：:]\s*)([^\n\r，,。.]+)/i);
+      if (audienceMatch) {
+        result.targetAudience = audienceMatch[1].trim();
+      }
+    }
+    
+    // 验证营销目的
+    if (result.purpose === '产品推广' || !result.purpose) {
+      const purposeMatch = originalText.match(/(?:营销目的[：:]\s*|视频目的[：:]\s*|推广目的[：:]\s*)([^\n\r，,。.]+)/i);
+      if (purposeMatch) {
+        result.purpose = purposeMatch[1].trim();
+      }
+    }
+    
+    // 提高置信度
+    if (result.brandName !== '未知品牌' && result.industry !== '其他') {
+      result.confidence = Math.min(result.confidence + 0.1, 0.98);
+    }
+    
+    return result;
   }
 
   private buildPrompt(text: string): string {
@@ -56,7 +123,7 @@ ${text}
 
 重要提示：
 1. 仔细分析产品描述，准确判断产品类型：
-   - 保健品：维生素、蛋白粉、钙片、鱼油、益生菌、胶原蛋白、营养补充剂、膳食补充剂、软胶囊、胶囊、营养、健康、免疫力、骨骼健康、心血管健康、肠道菌群、美容养颜、延缓衰老、促进钙吸收、增强体质、补充营养
+   - 保健品：维生素、蛋白粉、钙片、鱼油、益生菌、胶原蛋白、营养补充剂、膳食补充剂、软胶囊、胶囊、营养、健康、免疫力、骨骼健康、心血管健康、肠道菌群、美容养颜、延缓衰老、促进钙吸收、增强体质、补充营养、抗衰、抗氧化、麦角硫因、抗衰老、细胞层面、精准营养
    - 3C数码：手机、电脑、耳机、相机、智能设备、数码、电子、科技、芯片、处理器、内存、存储、屏幕、电池、充电、蓝牙、wifi、5g、平板、智能手表
    - 美妆护肤：面膜、精华、口红、粉底、护肤品、化妆品、美妆、护肤、洁面、爽肤水、乳液、面霜、防晒、卸妆、彩妆、香水
    - 服装鞋包：衣服、鞋子、包包、服装、时尚、穿搭、上衣、裤子、裙子、外套、内衣、运动服、休闲装、正装

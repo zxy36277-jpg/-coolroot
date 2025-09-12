@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强AI解析测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .test-section h3 {
+            color: #34495e;
+            margin-top: 0;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            resize: vertical;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #28a745;
+        }
+        .result h4 {
+            color: #28a745;
+            margin-top: 0;
+        }
+        .result-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #e9ecef;
+        }
+        .result-item strong {
+            color: #495057;
+        }
+        .confidence {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .confidence.high {
+            background: #d4edda;
+            color: #155724;
+        }
+        .confidence.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .confidence.low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 增强AI解析测试</h1>
+        
+        <div class="test-section">
+            <h3>📝 测试文本</h3>
+            <textarea id="testText" placeholder="请输入产品信息文本...">品牌名称：FineNutri斐萃
+目标人群：25-40岁都市精英女性、职场妈妈、面临初老问题的女性群体
+营销目的：产品推广
+
+FineNutri斐萃品牌手册
+
+在快节奏的都市生活中，25-40岁的精英女性面临着工作压力、生活负担和初老问题的多重挑战。FineNutri斐萃应运而生，专为这一群体打造的抗衰老营养补充剂。
+
+核心卖点：
+1. 6000倍抗氧化力的麦角硫因核心成分
+2. 细胞层面精准营养补充
+3. 内外双抗抗衰老效果
+4. 三甲医院50天真实人体实验验证
+
+产品功效：
+- 抗衰：从细胞层面延缓衰老进程
+- 抗氧化：清除自由基，保护细胞健康
+- 抗垂抗纹：改善肌肤紧致度和弹性
+- 精准营养：针对女性抗衰老需求定制
+
+适用人群：25-40岁都市女性、职场精英、精致妈妈、面临初老和抗衰老需求的女性群体
+
+不适用人群：孕妇、哺乳期妇女、18岁以下人群
+
+营销目的：通过精准的产品定位和科学的功效验证，在目标人群中建立品牌认知，促进产品销售转化。
+
+推广平台：抖音、小红书、淘宝等主流电商和社交媒体平台</textarea>
+            <br>
+            <button onclick="testLocalAPI()">🏠 测试本地API</button>
+            <button onclick="testVercelAPI()">☁️ 测试Vercel API</button>
+            <button onclick="loadSampleText()">📄 加载示例文本</button>
+        </div>
+
+        <div id="result" style="display: none;">
+            <div class="result">
+                <h4>🎯 解析结果</h4>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function testLocalAPI() {
+            const text = document.getElementById('testText').value;
+            if (!text.trim()) {
+                alert('请输入测试文本');
+                return;
+            }
+
+            showLoading('本地API解析中...');
+            
+            try {
+                const response = await fetch('http://localhost:5119/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayResult(result, '本地API');
+            } catch (error) {
+                showError('本地API测试失败: ' + error.message);
+            }
+        }
+
+        async function testVercelAPI() {
+            const text = document.getElementById('testText').value;
+            if (!text.trim()) {
+                alert('请输入测试文本');
+                return;
+            }
+
+            showLoading('Vercel API解析中...');
+            
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: text })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                displayResult(result, 'Vercel API');
+            } catch (error) {
+                showError('Vercel API测试失败: ' + error.message);
+            }
+        }
+
+        function loadSampleText() {
+            const sampleText = `品牌名称：FineNutri斐萃
+目标人群：25-40岁都市精英女性、职场妈妈、面临初老问题的女性群体
+营销目的：产品推广
+
+FineNutri斐萃品牌手册
+
+在快节奏的都市生活中，25-40岁的精英女性面临着工作压力、生活负担和初老问题的多重挑战。FineNutri斐萃应运而生，专为这一群体打造的抗衰老营养补充剂。
+
+核心卖点：
+1. 6000倍抗氧化力的麦角硫因核心成分
+2. 细胞层面精准营养补充
+3. 内外双抗抗衰老效果
+4. 三甲医院50天真实人体实验验证
+
+产品功效：
+- 抗衰：从细胞层面延缓衰老进程
+- 抗氧化：清除自由基，保护细胞健康
+- 抗垂抗纹：改善肌肤紧致度和弹性
+- 精准营养：针对女性抗衰老需求定制
+
+适用人群：25-40岁都市女性、职场精英、精致妈妈、面临初老和抗衰老需求的女性群体
+
+不适用人群：孕妇、哺乳期妇女、18岁以下人群
+
+营销目的：通过精准的产品定位和科学的功效验证，在目标人群中建立品牌认知，促进产品销售转化。
+
+推广平台：抖音、小红书、淘宝等主流电商和社交媒体平台`;
+            
+            document.getElementById('testText').value = sampleText;
+        }
+
+        function showLoading(message) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultDiv.style.display = 'block';
+            resultContent.innerHTML = `<div class="loading">${message}</div>`;
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            resultDiv.style.display = 'block';
+            resultContent.innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function displayResult(result, source) {
+            const resultDiv = document.getElementById('result');
+            const resultContent = document.getElementById('resultContent');
+            
+            const confidence = result.confidence || 0;
+            const confidenceClass = confidence >= 0.8 ? 'high' : confidence >= 0.6 ? 'medium' : 'low';
+            
+            resultContent.innerHTML = `
+                <div class="result-item">
+                    <strong>数据源:</strong> ${source}
+                </div>
+                <div class="result-item">
+                    <strong>品牌名称:</strong> ${result.brandName || '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>产品行业:</strong> ${result.industry || '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>目标人群:</strong> ${result.targetAudience || '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>营销目的:</strong> ${result.videoPurpose || result.purpose || '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>核心卖点:</strong> ${Array.isArray(result.sellingPoints) ? result.sellingPoints.join(', ') : '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>推广平台:</strong> ${Array.isArray(result.platforms) ? result.platforms.join(', ') : '未识别'}
+                </div>
+                <div class="result-item">
+                    <strong>优惠信息:</strong> ${result.promotionInfo || result.discount || '无'}
+                </div>
+                <div class="result-item">
+                    <strong>违禁词:</strong> ${result.forbiddenWords || '无'}
+                </div>
+                <div class="result-item">
+                    <strong>解析置信度:</strong> 
+                    <span class="confidence ${confidenceClass}">${(confidence * 100).toFixed(1)}%</span>
+                </div>
+            `;
+            
+            resultDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
