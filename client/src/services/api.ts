@@ -103,7 +103,7 @@ export const apiService = {
       // 生成6个不同模板的脚本
       const scripts: ScriptContent[] = [
         {
-          ...baseScript,
+          ...mockScript,
           id: 1,
           templateType: '对比类',
           title: '对比类脚本 - 性能对比实测',
@@ -113,7 +113,7 @@ export const apiService = {
           performanceMetrics: "ARPU 1.8万，CTR 6.5%，适配45秒短视频"
         },
         {
-          ...baseScript,
+          ...mockScript,
           id: 2,
           templateType: '测评类',
           title: '测评类脚本 - 深度体验评测',
@@ -123,7 +123,7 @@ export const apiService = {
           performanceMetrics: "ARPU 2.1万，CTR 7.2%，适配60秒短视频"
         },
         {
-          ...baseScript,
+          ...mockScript,
           id: 3,
           templateType: '种草类',
           title: '种草类脚本 - 好物推荐',
@@ -133,7 +133,7 @@ export const apiService = {
           performanceMetrics: "ARPU 1.5万，CTR 8.1%，适配30秒短视频"
         },
         {
-          ...baseScript,
+          ...mockScript,
           id: 4,
           templateType: '剧情类',
           title: '剧情类脚本 - 生活场景',
@@ -143,7 +143,7 @@ export const apiService = {
           performanceMetrics: "ARPU 1.9万，CTR 6.8%，适配50秒短视频"
         },
         {
-          ...baseScript,
+          ...mockScript,
           id: 5,
           templateType: '知识类',
           title: '知识类脚本 - 科普讲解',
@@ -153,7 +153,7 @@ export const apiService = {
           performanceMetrics: "ARPU 2.3万，CTR 5.9%，适配90秒短视频"
         },
         {
-          ...baseScript,
+          ...mockScript,
           id: 6,
           templateType: '情感类',
           title: '情感类脚本 - 情感共鸣',
